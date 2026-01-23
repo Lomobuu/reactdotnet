@@ -35,3 +35,4 @@ C:\Users\sfossen\OneDrive - Capgemini\Documents\Git\reactdotnet\ReactApp1.Server
 C:\Users\sfossen\OneDrive - Capgemini\Documents\Git\reactdotnet\ReactApp1.Server\obj\Debug\net10.0\ReactApp1.Server.pdb
 C:\Users\sfossen\OneDrive - Capgemini\Documents\Git\reactdotnet\ReactApp1.Server\obj\Debug\net10.0\ReactApp1.Server.genruntimeconfig.cache
 C:\Users\sfossen\OneDrive - Capgemini\Documents\Git\reactdotnet\ReactApp1.Server\obj\Debug\net10.0\ref\ReactApp1.Server.dll
+C:\Users\sfossen\OneDrive - Capgemini\Documents\Git\reactdotnet\ReactApp1.Server\obj\Debug\net10.0\ReactApp1.Server.sourcelink.json

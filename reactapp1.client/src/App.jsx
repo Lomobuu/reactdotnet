@@ -23,8 +23,9 @@ function App() {
         </button>
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
+              </p>
+          </div>
+      <p>I am Making a change to the template!</p>
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
