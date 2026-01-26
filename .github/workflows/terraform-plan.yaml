@@ -68,8 +68,9 @@ jobs:
         - name: Terraform Plan
           run: terraform plan -input=false -var location=$location -var environment=$environment -out=tfplan
 
+
         - name: Upload Plan Artifact
           uses: actions/upload-artifact@v4
           with:
-            name: tfplan
+            name: tfplan-${{ env.environment }}
             path: .github/Terraform/tfplan

@@ -46,11 +46,13 @@ jobs:
             -backend-config="key=terraform.tfstate" \
             -backend-config="use_oidc=true"
 
+
       - name: Download Plan Artifact
         uses: actions/download-artifact@v4
         with:
-          name: tfplan
+          name: tfplan-${{ env.environment }}
           path: .github/Terraform
+
 
       - name: Terraform Apply
         run: terraform apply -input=false tfplan
