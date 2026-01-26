@@ -1,0 +1,78 @@
+name: 'Terraform Deployment'
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - test
+          - prod
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+    location: westeurope
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+    ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+    ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+jobs:
+  terraform:
+        name: Deploy to Azure
+        environment: ${{ github.event.inputs.environment || 'dev' }}
+        runs-on: ubuntu-latest
+        # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+        defaults:
+          run:
+            working-directory: .github/Terraform
+            shell: bash
+
+        steps:
+        # Checkout the repository to the GitHub Actions runner
+        - name: Checkout
+          uses: actions/checkout@v3
+
+        # Install the latest version of Terraform CLI 
+        - name: Setup Terraform
+          uses: hashicorp/setup-terraform@v1
+
+        # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+        - name: Terraform Init
+          run: |
+            terraform init \
+              -backend-config="resource_group_name=reactdotnet-management-RG" \
+              -backend-config="storage_account_name=tfstatereactdotnetfozzen" \
+              -backend-config="container_name=tfstate-$environment" \
+              -backend-config="key=terraform.tfstate" \
+              -backend-config="use_oidc=true"
+
+
+        - name: Terraform Format
+          run: terraform fmt -recursive
+
+        # Validate before Planning
+        - name: Terraform Validate
+          run: terraform validate 
+
+
+        - name: Terraform Plan
+          run: terraform plan -input=false \
+              -var location=$location \
+              -var environment=$environment \
+              -out=tfplan
+
+        - name: Upload Plan Artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: tfplan
+            path: .github/Terraform/tfplan
