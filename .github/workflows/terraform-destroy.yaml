@@ -59,9 +59,7 @@ jobs:
       run: terraform validate 
 
     - name: Terraform Plan (Destroy)
-      run: terraform plan -destroy -input=false \
-            -var location=$location \
-            -var environment=$environment
+      run: terraform plan -destroy -input=false -var location=$location -var environment=$environment
 
     - name: Terraform Destroy
       run: terraform destroy -auto-approve -input=false \

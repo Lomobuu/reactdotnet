@@ -7,5 +7,10 @@ Create infrastructure code:
 - Setup backend code with script, pointing to a created RG to setup a management storage account for terraform.tfstate file.
 - setup terraform plan, apply and optionally destroy
 ## Azure RG, SA, RBAC Setup
-
+- Create management Resource Group in Azure
+- Create Service Principal in Azure (Entra ID->App Registration)
+- Setup Federated Credentials for the branches / environments
+- Give SA owner to resource group in Azure
 ## Git Setup
+- Setup Github Action Credentials for Authentication with Azure
+- Setup Environments approval gates
