@@ -11,6 +11,7 @@ Create infrastructure code:
 - Create Service Principal in Azure (Entra ID->App Registration)
 - Setup Federated Credentials for the branches / environments
 - Give SA owner to resource group in Azure
+- Create <name>-<environment>-RG groups.
 ## Git Setup
 - Setup Github Action Credentials for Authentication with Azure
 - Setup Environments approval gates
