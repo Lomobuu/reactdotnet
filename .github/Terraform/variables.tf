@@ -1,6 +1,7 @@
 variable "location" {
   type        = string
   description = "Azure region to deploy resources"
+  default = "westeurope"
 }
 
 variable "environment" {
