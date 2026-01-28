@@ -7,6 +7,7 @@ variable "location" {
 variable "environment" {
   type        = string
   description = "Deployment environment (dev, test, prod)"
+  default = "dev" ## Set default to dev, if no env is chosen, dev is set
 }
 
 variable "tags" {
