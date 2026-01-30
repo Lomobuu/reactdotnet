@@ -4,15 +4,12 @@ on:
   push:
     branches:
       - dev
-      - test
-      - main
   workflow_dispatch:
 
 permissions:
   id-token: write
   contents: read
 
-# Global env: ONLY things that do NOT depend on env.*
 env:
   ENVIRONMENT: ${{ github.ref_name == 'dev' && 'dev'
                 || github.ref_name == 'test' && 'test'
@@ -24,13 +21,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Job-level env: CAN reference env.ENVIRONMENT
-    env:
-      REGISTRY: app${{ env.ENVIRONMENT }}.azurecr.io
-      APP_NAME: fozzen-reactdotnet-appplan${{ env.ENVIRONMENT }}
-
     steps:
       - uses: actions/checkout@v3
+
+      # Set ENV at job level
+      - name: Set derived environment variables
+        run: |
+          echo "REGISTRY=app${ENVIRONMENT}.azurecr.io" >> $GITHUB_ENV
+          echo "APP_NAME=fozzen-reactdotnet-appplan${ENVIRONMENT}" >> $GITHUB_ENV
 
       - name: Debug variables
         run: |
@@ -69,12 +67,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
 
-    env:
-      REGISTRY: app${{ env.ENVIRONMENT }}.azurecr.io
-      APP_NAME: fozzen-reactdotnet-appplan${{ env.ENVIRONMENT }}
-
     steps:
       - uses: actions/checkout@v3
+
+      # Set ENV at job level
+      - name: Set derived environment variables
+        run: |
+          echo "REGISTRY=app${ENVIRONMENT}.azurecr.io" >> $GITHUB_ENV
+          echo "APP_NAME=fozzen-reactdotnet-appplan${ENVIRONMENT}" >> $GITHUB_ENV
 
       - name: Azure Login
         uses: azure/login@v2
