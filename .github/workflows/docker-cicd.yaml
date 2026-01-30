@@ -11,56 +11,31 @@ permissions:
   contents: read
 
 env:
-  ENVIRONMENT: ${{ github.ref_name == 'dev' && 'dev' || github.ref_name == 'test' && 'test' || github.ref_name == 'main' && 'prod' }}
-  REGISTRY: app${{ env.ENVIRONMENT }}.azurecr.io
+  ENVIRONMENT: ${{ github.ref_name == 'dev' && 'dev'
+                || github.ref_name == 'test' && 'test'
+                || github.ref_name == 'main' && 'prod' }}
   IMAGE_NAME: ${{ github.repository }}
-  APP_NAME: fozzen-reactdotnet-appplan{{ env.ENVIRONMENT }}
 
 jobs:
   build:
-      runs-on: 'ubuntu-latest'
-  
-      steps:
+    runs-on: ubuntu-latest
+    
+    env:
+      REGISTRY: app${{ env.ENVIRONMENT }}.azurecr.io
+      APP_NAME: fozzen-reactdotnet-appplan${{ env.ENVIRONMENT }}
+
+    steps:
       - uses: actions/checkout@v3
-  
+
+      - name: Echo variables
+        run: |
+          echo "ENVIRONMENT=$ENVIRONMENT"
+          echo "REGISTRY=$REGISTRY"
+          echo "APP_NAME=$APP_NAME"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
   
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Login to ACR via OIDC
-        run: az acr login --name $REGISTRY
-  
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-            images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-  
-      - name: Build and push container image to registry
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          context: ./reactdotnet
-          cache-from: type=gha
-          tags: ${{ steps.meta.outputs.tags }}
-  
-  deploy:
-      
-      runs-on: ubuntu-latest
-      needs: build_prod
-      
-      steps:
-      - uses: actions/checkout@v3
-  
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -76,16 +51,11 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
-      - name: Azure Login
-        uses: azure/login@v2
+  
+      - name: Build and push container image to registry
+        uses: docker/build-push-action@v5
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name:
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: $APP_NAME
-          images: '${{ steps.meta.outputs.tags }}'
+          push: true
+          context: ./reactdotnet
+          cache-from: type=gha
+          tags: ${{ steps.meta.outputs.tags }}
