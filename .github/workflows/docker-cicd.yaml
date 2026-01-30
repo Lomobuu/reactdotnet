@@ -10,11 +10,11 @@ permissions:
   id-token: write
   contents: read
 
-  env:
-    ENVIRONMENT: ${{ github.ref_name == 'dev' && 'dev' || github.ref_name == 'test' && 'test' || github.ref_name == 'main' && 'prod' }}
-    REGISTRY: app${{ env.ENVIRONMENT }}.azurecr.io
-    IMAGE_NAME: ${{ github.repository }}
-    APP_NAME: fozzen-reactdotnet-appplan{{ env.ENVIRONMENT }}
+env:
+  ENVIRONMENT: ${{ github.ref_name == 'dev' && 'dev' || github.ref_name == 'test' && 'test' || github.ref_name == 'main' && 'prod' }}
+  REGISTRY: app${{ env.ENVIRONMENT }}.azurecr.io
+  IMAGE_NAME: ${{ github.repository }}
+  APP_NAME: fozzen-reactdotnet-appplan{{ env.ENVIRONMENT }}
 
 jobs:
   build:
