@@ -25,18 +25,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Set ENV at job level
-      - name: Set derived environment variables
-        run: |
-          echo "REGISTRY=app${ENVIRONMENT}.azurecr.io" >> $GITHUB_ENV
-          echo "APP_NAME=fozzen-reactdotnet-appplan${ENVIRONMENT}" >> $GITHUB_ENV
-
-      - name: Debug variables
-        run: |
-          echo "ENVIRONMENT=$ENVIRONMENT"
-          echo "REGISTRY=$REGISTRY"
-          echo "APP_NAME=$APP_NAME"
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -48,13 +36,13 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Login to ACR via OIDC
-        run: az acr login --name $REGISTRY
+        run: az acr login --name app${ENVIRONMENT}.azurecr.io
 
       - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.app${ENVIRONMENT}.azurecr.io }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push container image
         uses: docker/build-push-action@v5
@@ -72,12 +60,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Set ENV at job level
-      - name: Set derived environment variables
-        run: |
-          echo "REGISTRY=app${ENVIRONMENT}.azurecr.io" >> $GITHUB_ENV
-          echo "APP_NAME=fozzen-reactdotnet-appplan${ENVIRONMENT}" >> $GITHUB_ENV
-
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -86,16 +68,16 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Login to ACR via OIDC
-        run: az acr login --name $REGISTRY
+        run: az acr login --name app${ENVIRONMENT}.azurecr.io
 
       - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.app${ENVIRONMENT}.azurecr.io }}/${{ env.IMAGE_NAME }}
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ env.APP_NAME }}
+          app-name: fozzen-reactdotnet-appplan${ENVIRONMENT}
           images: ${{ steps.meta.outputs.tags }}
