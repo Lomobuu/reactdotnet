@@ -20,7 +20,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    environment: ${{ env.ENVIRONMENT }}
+    environment: ${{ github.ref_name == 'main' && 'prod' || github.ref_name }}
 
     steps:
       - uses: actions/checkout@v3
@@ -54,7 +54,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ env.ENVIRONMENT }}
+    environment: ${{ github.ref_name == 'main' && 'prod' || github.ref_name }}
     needs: build
 
     steps:
