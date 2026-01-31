@@ -15,6 +15,8 @@ env:
                 || github.ref_name == 'test' && 'test'
                 || github.ref_name == 'main' && 'prod' }}
   IMAGE_NAME: ${{ github.repository }}
+  ACR_NAME: app${{ github.ref_name == 'main' && 'prod' || github.ref_name }}
+  ACR_LOGIN_SERVER: app${{ github.ref_name == 'main' && 'prod' || github.ref_name }}.azurecr.io
 
 jobs:
 
@@ -36,13 +38,13 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Login to ACR via OIDC
-        run: az acr login --name app${ENVIRONMENT}.azurecr.io
+        run: az acr login --name $ACR_NAME
 
       - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.app${ENVIRONMENT}.azurecr.io }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push container image
         uses: docker/build-push-action@v5
@@ -68,13 +70,13 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Login to ACR via OIDC
-        run: az acr login --name app${ENVIRONMENT}.azurecr.io
+        run: az acr login --name $ACR_NAME
 
       - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.app${ENVIRONMENT}.azurecr.io }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
