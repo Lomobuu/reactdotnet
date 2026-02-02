@@ -50,7 +50,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          context: ./reactdotnet
+          context: ./ReactApp1.Server
           cache-from: type=gha
           tags: ${{ steps.meta.outputs.tags }}
 
