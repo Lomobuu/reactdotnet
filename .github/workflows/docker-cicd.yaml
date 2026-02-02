@@ -15,7 +15,7 @@ env:
                 || github.ref_name == 'test' && 'test'
                 || github.ref_name == 'main' && 'prod' }}
   IMAGE_NAME: ${{ github.repository }}
-  ACR_NAME: fozzen-reactdotnet-appsvc${{ github.ref_name == 'main' && 'prod' || github.ref_name }}
+  ACR_NAME: fozzenreactdotnetreg${{ github.ref_name == 'main' && 'prod' || github.ref_name }}
   ACR_LOGIN_SERVER: fozzenreactdotnetreg${{ github.ref_name == 'main' && 'prod' || github.ref_name }}.azurecr.io
 
 jobs:
@@ -81,5 +81,5 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: fozzen-reactdotnet-appplan${ENVIRONMENT}
+          app-name: fozzen-reactdotnet-appsvc${ENVIRONMENT}
           images: ${{ steps.meta.outputs.tags }}
