@@ -81,5 +81,5 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: fozzen-reactdotnet-appsvc${ENVIRONMENT}
+          app-name: fozzen-reactdotnet-appsvc${{ env.ENVIRONMENT }}
           images: ${{ steps.meta.outputs.tags }}
