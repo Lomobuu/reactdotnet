@@ -50,9 +50,11 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          context: ./ReactApp1.Server
+          context: .
+          file: ReactApp1.Server/Dockerfile
           cache-from: type=gha
           tags: ${{ steps.meta.outputs.tags }}
+
 
   deploy:
     runs-on: ubuntu-latest
