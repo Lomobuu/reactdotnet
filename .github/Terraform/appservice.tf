@@ -24,6 +24,10 @@ resource "azurerm_app_service" "AppSvc" {
   site_config {
     linux_fx_version = "DOCKER|mcr.microsoft.com/azuredocs/aci-helloworld:latest"
   }
+
+    identity {
+    type = "SystemAssigned"
+  }
 # Make sure template only set at first creation
   lifecycle {
   ignore_changes = [
