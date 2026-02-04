@@ -10,7 +10,7 @@ RUN npm run build
 
 
 # ----- .NET build stage -----
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
 WORKDIR /src
 
 COPY ReactApp1.Server/ReactApp1.Server.csproj ReactApp1.Server/
