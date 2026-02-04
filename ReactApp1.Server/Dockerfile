@@ -1,38 +1,38 @@
-# ----- React build stage -----
-FROM node:18 AS react-build
-WORKDIR /client
+# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-COPY reactapp1.client/package*.json ./
-RUN npm ci
-
-COPY reactapp1.client ./
-RUN npm run build
-
-
-# ----- .NET build stage -----
-FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
-WORKDIR /src
-
-COPY ReactApp1.Server/ReactApp1.Server.csproj ReactApp1.Server/
-RUN dotnet restore ReactApp1.Server/ReactApp1.Server.csproj
-
-COPY ReactApp1.Server ReactApp1.Server/
-
-# Copy React output into wwwroot
-COPY --from=react-build /client/dist ReactApp1.Server/wwwroot
-
-RUN dotnet publish ReactApp1.Server/ReactApp1.Server.csproj \
-    -c Release \
-    -o /app/publish \
-    /p:UseAppHost=false
-
-
-# ----- Runtime stage -----
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# This stage is used when running from VS in fast mode (Default for Debug configuration)
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+USER $APP_UID
 WORKDIR /app
-
-ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
+EXPOSE 8081
 
-COPY --from=build /app/publish .
+
+# This stage is used to build the service project
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS with-node
+RUN apt-get update
+RUN apt-get install curl
+RUN curl -sL https://deb.nodesource.com/setup_20.x | bash
+RUN apt-get -y install nodejs
+
+
+FROM with-node AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["ReactApp1.Server/ReactApp1.Server.csproj", "ReactApp1.Server/"]
+COPY ["reactapp1.client/reactapp1.client.esproj", "reactapp1.client/"]
+RUN dotnet restore "./ReactApp1.Server/ReactApp1.Server.csproj"
+COPY . .
+WORKDIR "/src/ReactApp1.Server"
+RUN dotnet build "./ReactApp1.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# This stage is used to publish the service project to be copied to the final stage
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./ReactApp1.Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "ReactApp1.Server.dll"]
