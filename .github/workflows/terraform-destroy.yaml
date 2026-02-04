@@ -3,6 +3,9 @@ name: Terraform Destroy
 
 on:
   workflow_dispatch:
+    paths: 
+    - '.github/Terraform/**' 
+    - '.github/workflows/terraform.yaml'
     inputs:
       environment:
         description: 'Target environment'

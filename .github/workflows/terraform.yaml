@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - dev
+    paths: 
+    - '.github/Terraform/**' 
+    - '.github/workflows/terraform.yaml'
   workflow_dispatch:
     inputs:
       environment:
