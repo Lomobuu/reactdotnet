@@ -22,5 +22,5 @@ provider "azurerm" {
 }
 
 data "azurerm_resource_group" "rg" {
-  name = "homelab-${var.environment}-RG"
+  name = "reactdotnet-${var.environment}-RG"
 }
