@@ -1,7 +1,5 @@
 name: 'Container Pull request Build & Deploy'
 
-name: Deploy
-
 on:
   workflow_run:
     workflows: ["Terraform Pull Request Plan & Apply"]     # must match the name: field in terraform-pr.yaml
