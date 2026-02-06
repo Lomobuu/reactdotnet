@@ -64,6 +64,8 @@ jobs:
     environment: pr
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Azure Login
         uses: azure/login@v2
