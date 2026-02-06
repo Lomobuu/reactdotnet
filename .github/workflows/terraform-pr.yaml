@@ -23,6 +23,7 @@ jobs:
   setup-pr-backend:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    environment: pr
     outputs:
       container_name: ${{ steps.bootstrap.outputs.container_name }} # Outputs from the bootstrap-pr.sh
     steps:
@@ -43,6 +44,7 @@ jobs:
   terraform-pr:
         if: github.event_name == 'pull_request'
         needs: [setup-pr-backend]
+        environment: pr
         name: Deploy Terraform to PR
         runs-on: ubuntu-latest
         # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
