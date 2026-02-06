@@ -5,8 +5,6 @@ on:
     workflows: ["Terraform Pull Request Plan & Apply"]     # must match the name: field in terraform-pr.yaml
     types:
       - completed
-    conclusions: 
-      - success
 
 permissions:
   id-token: write
@@ -21,6 +19,7 @@ env:
 jobs:
 
   build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} # Only start the job if the previous workflow did not fail.
     runs-on: ubuntu-latest
     environment: pr
     steps:
