@@ -13,8 +13,8 @@ permissions:
 env:
   ENVIRONMENT: pr${{ github.event.workflow_run.pull_requests[0].number }} # Get the workflow run(which triggers THIS pipeline) and get the PR ID of that workflow run.
   IMAGE_NAME: ${{ github.repository }}
-  ACR_NAME: fozzenreactdotnetregpr${{ github.event.workflow_run.pull_requests[0].number }}
-  ACR_LOGIN_SERVER: fozzenreactdotnetregpr${{ github.event.workflow_run.pull_requests[0].number }}.azurecr.io
+  ACR_NAME: fozzenrdotnetregpr${{ github.event.workflow_run.pull_requests[0].number }}
+  ACR_LOGIN_SERVER: fozzenrdotnetregpr${{ github.event.workflow_run.pull_requests[0].number }}.azurecr.io
 
 jobs:
 
