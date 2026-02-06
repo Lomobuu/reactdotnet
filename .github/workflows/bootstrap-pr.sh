@@ -9,9 +9,9 @@ if [ -z "$PR_ID" ]; then
   exit 1
 fi
 
-RESOURCE_GROUP="prenv-management-RG"
+RESOURCE_GROUP="reactdotnet-management-RG"
 LOCATION="westeurope"
-STORAGE_ACCOUNT="tfstateprenvfozzen"
+STORAGE_ACCOUNT="tfstatereactdotnetfozzen"
 CONTAINER_NAME="tfstate-pr${PR_ID}"
 
 echo "Setting up Terraform backend for Pull Request #${PR_ID}"
