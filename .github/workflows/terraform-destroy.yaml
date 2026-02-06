@@ -35,7 +35,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: .github/Terraform
+        working-directory: .github/Terraform/prod
         shell: bash
 
     steps:

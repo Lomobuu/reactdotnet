@@ -15,3 +15,16 @@ Create infrastructure code:
 ## Git Setup
 - Setup Github Action Credentials for Authentication with Azure
 - Setup Environments approval gates
+
+
+## Pull request environment setup
+### Setup
+Must add OIDC authentication in github for pull request
+Must add Subscription scope contributor access
+Be wary of keeping pull requests open because of large costs due to multiple environments
+PRenv RG must already exist
+Must have a seperate folder for the pr to be able to create its own resource group(also need diff config)
+1. Create new branch
+2. Pull request into dev
+3. Triggers bootstrap for storage account to host terraform state
+4. Triggers to create infrastructure in its own resource group based on the PRID
