@@ -43,3 +43,9 @@ resource "azurerm_app_service" "AppSvc" {
   }
   }
   
+  # Give new role assignment AcrPull to identity that pulls image from container registry
+resource "azurerm_role_assignment" "acrrole" {
+  role_definition_name = "AcrPull"
+  scope                = azurerm_container_registry.acr.id
+  principal_id         = azurerm_app_service.AppSvc.identity[0].principal_id
+}
