@@ -26,6 +26,7 @@ jobs:
   destroy:      
     name: Terraform Destroy
     runs-on: ubuntu-latest
+    environment: pr
     defaults:
       run:
         working-directory: .github/Terraform/pr
