@@ -1,4 +1,4 @@
-name: "Container Plan & Apply"
+name: "Container Build & Deploy"
 
 on:
   push:
