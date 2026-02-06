@@ -19,8 +19,8 @@ env:
   ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
   BACKEND_CONTAINER: tfstate-pr${{ github.event.pull_request.number }}
   PR_ID: ${{ github.event.pull_request.number }}
-  STORAGE_ACCOUNT: tfstateprenvfozzen
-  RESOURCE_GROUP: prenv-management-RG
+  RESOURCE_GROUP: reactdotnet-management-RG # Must already be created
+  STORAGE_ACCOUNT: tfstatereactdotnetfozzen # Created via the bootstrap
 
 jobs:
   destroy:      
