@@ -1,15 +1,19 @@
-name: 'Terraform Plan'
+name: 'Terraform Plan & Apply'
 
 on:
   push:
     branches:
       - dev
+    paths: 
+    - '.github/Terraform/**' 
+    - '.github/workflows/terraform.yaml'
   workflow_dispatch:
     inputs:
       environment:
         description: 'Target environment'
         required: true
         type: choice
+        default: dev
         options:
           - dev
           - test
@@ -34,7 +38,7 @@ jobs:
         # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
         defaults:
           run:
-            working-directory: .github/Terraform
+            working-directory: .github/Terraform/prod
             shell: bash
 
         steps:
@@ -66,13 +70,7 @@ jobs:
 
 
         - name: Terraform Plan
-          run: terraform plan -input=false \
-              -var location=$location \
-              -var environment=$environment \
-              -out=tfplan
-
-        - name: Upload Plan Artifact
-          uses: actions/upload-artifact@v4
-          with:
-            name: tfplan
-            path: .github/Terraform/tfplan
+          run: terraform plan -input=false -var location=$location -var environment=$environment
+          
+        - name: Terraform Apply
+          run: terraform apply -auto-approve -input=false

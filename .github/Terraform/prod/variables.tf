@@ -1,0 +1,18 @@
+variable "location" {
+  type        = string
+  description = "Azure region to deploy resources"
+  default = "westeurope"
+}
+
+variable "environment" {
+  type        = string
+  description = "Deployment environment (dev, test, prod)"
+  default = "dev" ## Set default to dev, if no env is chosen, dev is set
+}
+
+variable "tags" {
+  type        = map(string)
+  description = "Common tags to apply to all resources"
+  default     = {}
+}
+
