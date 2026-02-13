@@ -1,5 +1,5 @@
 resource "azurerm_storage_account" "storageAccount" {
-  name                     = "fozzenrdotnetstrg${var.environment}" ## no dashes allowed
+  name                     = local.storage_account_name
   resource_group_name      = azurerm_resource_group.rg.name
   location                 = azurerm_resource_group.rg.location
   account_tier             = "Standard"

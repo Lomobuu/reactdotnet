@@ -1,5 +1,5 @@
 resource "azurerm_container_registry" "acr" {
-  name                = "fozzenreactdotnetreg${var.environment}" ## no dashes allowed
+  name                = local.webapp_name
   resource_group_name = data.azurerm_resource_group.rg.name
   location            = data.azurerm_resource_group.rg.location
   sku                 = "Basic"

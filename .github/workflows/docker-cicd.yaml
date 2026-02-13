@@ -14,16 +14,15 @@ env:
   ENVIRONMENT: ${{ github.ref_name == 'dev' && 'dev'
                 || github.ref_name == 'test' && 'test'
                 || github.ref_name == 'main' && 'prod' }}
-  IMAGE_NAME: ${{ github.repository }}
-  ACR_NAME: fozzenreactdotnetreg${{ github.ref_name == 'main' && 'prod' || github.ref_name }}
-  ACR_LOGIN_SERVER: fozzenreactdotnetreg${{ github.ref_name == 'main' && 'prod' || github.ref_name }}.azurecr.io
 
 jobs:
 
   build:
     runs-on: ubuntu-latest
     environment: ${{ github.ref_name == 'main' && 'prod' || github.ref_name }}
-
+    outputs: # Set metadata that next job needs
+      webapp_name: ${{ steps.tf.outputs.webapp_name }}
+      image_tags: ${{ steps.meta.outputs.tags }}
     steps:
       - uses: actions/checkout@v3
 
@@ -37,14 +36,30 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      # Terraform Init (Read Only) to get environment names
+      - name: Terraform Init
+        run: |
+          terraform init -input=false -backend-config="backend.${{ github.ref_name == 'main' && 'prod' || github.ref_name }}.tfbackend"
+
+      - name: Read Terraform outputs
+        working-directory: .github/Terraform/prod
+        id: tf
+        shell: bash
+        run: |
+          # Capture all outputs
+          terraform output -json > tf_outputs.json
+          echo "acr_name=$(jq -r '.acr_name.value' tf_outputs.json)" >> $GITHUB_OUTPUT
+          echo "acr_login_server=$(jq -r '.acr_login_server.value' tf_outputs.json)" >> $GITHUB_OUTPUT
+          echo "webapp_name=$(jq -r '.webapp_name.value' tf_outputs.json)" >> $GITHUB_OUTPUT
+
       - name: Login to ACR via OIDC
-        run: az acr login --name $ACR_NAME
+        run: az acr login --name ${{ steps.tf.outputs.acr_name }}
 
       - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}
+          images: ${{ steps.tf.outputs.acr_login_server }}/${{ github.repository }}
 
       - name: Build and push container image
         uses: docker/build-push-action@v5
@@ -71,17 +86,8 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Login to ACR via OIDC
-        run: az acr login --name $ACR_NAME
-
-      - name: Extract metadata (tags, labels)
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}
-
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: fozzen-reactdotnet-appsvc${{ env.ENVIRONMENT }}
-          images: ${{ steps.meta.outputs.tags }}
+          app-name: ${{ needs.build.outputs.webapp_name }}
+          images: ${{ needs.build.outputs.image_tags }}

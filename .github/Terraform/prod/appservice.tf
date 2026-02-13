@@ -1,5 +1,5 @@
 resource "azurerm_app_service_plan" "appPlan" {
-  name                = "fozzen-reactdotnet-appplan${var.environment}"
+  name                = local.app_plan_name
   location            = data.azurerm_resource_group.rg.location
   resource_group_name = data.azurerm_resource_group.rg.name
   kind     = "Linux"
@@ -15,7 +15,7 @@ resource "azurerm_app_service_plan" "appPlan" {
 }
 
 resource "azurerm_app_service" "AppSvc" {
-  name                = "fozzen-reactdotnet-appsvc${var.environment}"
+  name                = local.webapp_name
   location            = data.azurerm_resource_group.rg.location
   resource_group_name = data.azurerm_resource_group.rg.name
   app_service_plan_id = azurerm_app_service_plan.appPlan.id
