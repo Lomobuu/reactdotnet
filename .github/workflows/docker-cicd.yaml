@@ -52,13 +52,15 @@ jobs:
             -backend-config="use_oidc=true"
 
       - name: Read Terraform outputs
-        working-directory: .github/Terraform/prod
         id: tf
+        working-directory: .github/Terraform/pr
         shell: bash
         run: |
-          echo "acr_name=$(terraform output -raw acr_name)" >> $GITHUB_OUTPUT
-          echo "acr_login_server=$(terraform output -raw acr_login_server)" >> $GITHUB_OUTPUT
-          echo "webapp_name=$(terraform output -raw webapp_name)" >> $GITHUB_OUTPUT
+          OUTPUTS=$(terraform output -json)
+          echo "acr_name=$(echo "$OUTPUTS" | jq -r '.acr_name.value')" >> "$GITHUB_OUTPUT"
+          echo "acr_login_server=$(echo "$OUTPUTS" | jq -r '.acr_login_server.value')" >> "$GITHUB_OUTPUT"
+          echo "webapp_name=$(echo "$OUTPUTS" | jq -r '.webapp_name.value')" >> "$GITHUB_OUTPUT"
+
 
       - name: Login to ACR via OIDC
         run: az acr login --name ${{ steps.tf.outputs.acr_name }}
