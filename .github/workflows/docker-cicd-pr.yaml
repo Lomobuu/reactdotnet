@@ -42,7 +42,7 @@ jobs:
       # Terraform Init (Read Only) to get environment names
       - name: Terraform Init
         run: |
-          terraform init -input=false -backend-config="backend.${{ env.ENVIRONMENT }}.tfbackend"
+          terraform init -backend-config="backend.${{ env.ENVIRONMENT }}.tfbackend"
 
       - name: Read Terraform outputs
         working-directory: .github/Terraform/pr

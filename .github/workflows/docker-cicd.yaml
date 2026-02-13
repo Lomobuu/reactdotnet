@@ -39,7 +39,7 @@ jobs:
       # Terraform Init (Read Only) to get environment names
       - name: Terraform Init
         run: |
-          terraform init -input=false -backend-config="backend.${{ github.ref_name == 'main' && 'prod' || github.ref_name }}.tfbackend"
+          terraform init -backend-config="backend.${{ github.ref_name == 'main' && 'prod' || github.ref_name }}.tfbackend"
 
       - name: Read Terraform outputs
         working-directory: .github/Terraform/prod
