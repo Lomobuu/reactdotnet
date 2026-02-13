@@ -12,7 +12,8 @@ permissions:
 
 env:
   ENVIRONMENT: pr${{ github.event.workflow_run.pull_requests[0].number }} # Get the workflow run(which triggers THIS pipeline) and get the PR ID of that workflow run.
-
+  RESOURCE_GROUP: reactdotnet-management-RG # Must already be created
+  STORAGE_ACCOUNT: tfstatereactdotnetfozzen # Created via the bootstrap
 jobs:
 
   build:
@@ -46,7 +47,12 @@ jobs:
       - name: Terraform Init
         working-directory: .github/Terraform/pr
         run: |
-          terraform init
+          terraform init \
+            -backend-config="resource_group_name=$RESOURCE_GROUP" \
+            -backend-config="storage_account_name=$STORAGE_ACCOUNT" \
+            -backend-config="container_name=tfstate-$environment" \
+            -backend-config="key=terraform.tfstate" \
+            -backend-config="use_oidc=true"
 
       - name: Read Terraform outputs
         working-directory: .github/Terraform/pr

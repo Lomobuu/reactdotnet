@@ -14,7 +14,8 @@ env:
   ENVIRONMENT: ${{ github.ref_name == 'dev' && 'dev'
                 || github.ref_name == 'test' && 'test'
                 || github.ref_name == 'main' && 'prod' }}
-
+  RESOURCE_GROUP: reactdotnet-management-RG # Must already be created
+  STORAGE_ACCOUNT: tfstatereactdotnetfozzen # Created via the bootstrap
 jobs:
 
   build:
@@ -43,7 +44,12 @@ jobs:
       - name: Terraform Init
         working-directory: .github/Terraform/prod
         run: |
-          terraform init
+          terraform init \
+            -backend-config="resource_group_name=$RESOURCE_GROUP" \
+            -backend-config="storage_account_name=$STORAGE_ACCOUNT" \
+            -backend-config="container_name=tfstate-$environment" \
+            -backend-config="key=terraform.tfstate" \
+            -backend-config="use_oidc=true"
 
       - name: Read Terraform outputs
         working-directory: .github/Terraform/prod
