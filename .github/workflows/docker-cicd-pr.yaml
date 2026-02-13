@@ -40,7 +40,6 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Setup Terraform
-        working-directory: .github/Terraform/pr
         uses: hashicorp/setup-terraform@v1
 
       # Terraform Init (Read Only) to get environment names
