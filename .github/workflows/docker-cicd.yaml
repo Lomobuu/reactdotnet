@@ -53,7 +53,7 @@ jobs:
 
       - name: Read Terraform outputs
         id: tf
-        working-directory: .github/Terraform/pr
+        working-directory: .github/Terraform/prod
         shell: bash
         run: |
           OUTPUTS=$(terraform output -json)
