@@ -46,7 +46,7 @@ jobs:
       - name: Terraform Init
         working-directory: .github/Terraform/pr
         run: |
-          terraform init -backend-config="backend.${{ env.ENVIRONMENT }}.tfbackend"
+          terraform init
 
       - name: Read Terraform outputs
         working-directory: .github/Terraform/pr

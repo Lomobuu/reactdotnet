@@ -43,7 +43,7 @@ jobs:
       - name: Terraform Init
         working-directory: .github/Terraform/prod
         run: |
-          terraform init -backend-config="backend.${{ github.ref_name == 'main' && 'prod' || github.ref_name }}.tfbackend"
+          terraform init
 
       - name: Read Terraform outputs
         working-directory: .github/Terraform/prod
