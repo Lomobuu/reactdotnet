@@ -40,10 +40,12 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Setup Terraform
+        working-directory: .github/Terraform/prod
         uses: hashicorp/setup-terraform@v1
 
       # Terraform Init (Read Only) to get environment names
       - name: Terraform Init
+        working-directory: .github/Terraform/prod
         run: |
           terraform init -backend-config="backend.${{ env.ENVIRONMENT }}.tfbackend"
 
