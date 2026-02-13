@@ -55,13 +55,20 @@ jobs:
             -backend-config="use_oidc=true"
 
       - name: Read Terraform outputs
-        working-directory: .github/Terraform/pr
         id: tf
+        working-directory: .github/Terraform/pr
         shell: bash
+        env:
+          TF_LOG: ""          # disable terraform logging
         run: |
-          echo "acr_name=$(terraform output -raw acr_name)" >> $GITHUB_OUTPUT
-          echo "acr_login_server=$(terraform output -raw acr_login_server)" >> $GITHUB_OUTPUT
-          echo "webapp_name=$(terraform output -raw webapp_name)" >> $GITHUB_OUTPUT
+          ACR_NAME=$(terraform output -raw acr_name | tr -d '\r')
+          ACR_LOGIN_SERVER=$(terraform output -raw acr_login_server | tr -d '\r')
+          WEBAPP_NAME=$(terraform output -raw webapp_name | tr -d '\r')
+
+          echo "acr_name=$ACR_NAME" >> "$GITHUB_OUTPUT"
+          echo "acr_login_server=$ACR_LOGIN_SERVER" >> "$GITHUB_OUTPUT"
+          echo "webapp_name=$WEBAPP_NAME" >> "$GITHUB_OUTPUT"
+
 
       - name: Login to ACR via OIDC
         run: az acr login --name ${{ steps.tf.outputs.acr_name }}
