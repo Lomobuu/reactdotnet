@@ -56,17 +56,9 @@ jobs:
         id: tf
         shell: bash
         run: |
-          {
-            echo "acr_name<<EOF"
-            terraform output -raw acr_name
-            echo "EOF"
-            echo "acr_login_server<<EOF"
-            terraform output -raw acr_login_server
-            echo "EOF"
-            echo "webapp_name<<EOF"
-            terraform output -raw webapp_name
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+          echo "acr_name=$(terraform output -raw acr_name)" >> $GITHUB_OUTPUT
+          echo "acr_login_server=$(terraform output -raw acr_login_server)" >> $GITHUB_OUTPUT
+          echo "webapp_name=$(terraform output -raw webapp_name)" >> $GITHUB_OUTPUT
 
       - name: Login to ACR via OIDC
         run: az acr login --name ${{ steps.tf.outputs.acr_name }}
