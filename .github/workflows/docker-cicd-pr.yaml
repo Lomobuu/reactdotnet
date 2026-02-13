@@ -58,12 +58,21 @@ jobs:
         id: tf
         working-directory: .github/Terraform/pr
         run: |
-          # Read raw outputs safely
-          ACR_NAME=$(terraform output -raw acr_name || true)
-          ACR_LOGIN_SERVER=$(terraform output -raw acr_login_server || true)
-          WEBAPP_NAME=$(terraform output -raw webapp_name || true)
+          set -e
 
-          # Write values to GitHub outputs
+          # Try each output, but DO NOT allow errors to leak into $GITHUB_OUTPUT
+          ACR_NAME=$(terraform output -raw acr_name 2>/dev/null || echo "")
+          ACR_LOGIN_SERVER=$(terraform output -raw acr_login_server 2>/dev/null || echo "")
+          WEBAPP_NAME=$(terraform output -raw webapp_name 2>/dev/null || echo "")
+
+          # Fail cleanly BEFORE writing outputs
+          if [ -z "$ACR_NAME" ] || [ -z "$ACR_LOGIN_SERVER" ] || [ -z "$WEBAPP_NAME" ]; then
+            echo "::error::Terraform backend state was NOT loaded. Check terraform init and apply."
+            terraform output || true
+            exit 1
+          fi
+
+          # Write ONLY VALID values into $GITHUB_OUTPUT
           echo "acr_name=$ACR_NAME" >> $GITHUB_OUTPUT
           echo "acr_login_server=$ACR_LOGIN_SERVER" >> $GITHUB_OUTPUT
           echo "webapp_name=$WEBAPP_NAME" >> $GITHUB_OUTPUT
