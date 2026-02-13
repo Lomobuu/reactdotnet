@@ -28,3 +28,13 @@ locals {
     var.tags
   )
 }
+
+output "acr_name" {
+  value = local.acr_name
+}
+output "acr_login_server" {
+  value = acr_login_server
+}
+output "webapp_name" {
+  value = webapp_name
+}

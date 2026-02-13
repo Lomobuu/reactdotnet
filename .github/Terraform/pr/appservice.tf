@@ -49,3 +49,7 @@ resource "azurerm_role_assignment" "acrrole" {
   scope                = azurerm_container_registry.acr.id
   principal_id         = azurerm_app_service.AppSvc.identity[0].principal_id
 }
+
+output "webapp_name" {
+  value = azurerm_app_service.AppSvc.name
+}
