@@ -1,5 +1,5 @@
 resource "azurerm_container_registry" "acr" {
-  name                = local.webapp_name
+  name                = local.acr_name
   resource_group_name = data.azurerm_resource_group.rg.name
   location            = data.azurerm_resource_group.rg.location
   sku                 = "Basic"
