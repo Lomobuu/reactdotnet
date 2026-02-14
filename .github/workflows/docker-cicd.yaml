@@ -58,10 +58,9 @@ jobs:
         working-directory: .github/Terraform/prod
         shell: bash
         run: |
-          OUTPUTS=$(terraform output -json)
-          echo "acr_name=$(echo "$OUTPUTS" | jq -r '.acr_name.value')" >> "$GITHUB_OUTPUT"
-          echo "acr_login_server=$(echo "$OUTPUTS" | jq -r '.acr_login_server.value')" >> "$GITHUB_OUTPUT"
-          echo "webapp_name=$(echo "$OUTPUTS" | jq -r '.webapp_name.value')" >> "$GITHUB_OUTPUT"
+          echo "acr_name=$(terraform output -raw acr_name)" >> $GITHUB_OUTPUT
+          echo "acr_login_server=$(terraform output -raw acr_login_server)" >> $GITHUB_OUTPUT
+          echo "webapp_name=$(terraform output -raw webapp_name)" >> $GITHUB_OUTPUT
 
 
       - name: Login to ACR via OIDC
