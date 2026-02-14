@@ -39,6 +39,8 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
        
       # Terraform Init (Read Only) to get environment names
       - name: Terraform Init
