@@ -26,6 +26,10 @@ resource "azurerm_app_service" "AppSvc" {
     acr_use_managed_identity_credentials = true
   }
 
+    app_settings = {
+    APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.appi.connection_string
+  }
+
     identity {
     type = "SystemAssigned"
   }

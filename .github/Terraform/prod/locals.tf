@@ -16,8 +16,12 @@ locals {
   webapp_name = "${local.base}-appsvc-${local.env}"
   app_plan_name = "${local.base}-appplan-${local.env}"
 
-  #
+  # key vault
   kv_name = "${local.base}-kv-${local.env}"
+
+  # Log
+  log_analytics_name = "${local.base}-log-${local.env}"
+  appi_name = "${local.base}-appi-${local.env}"
 
   # Tags
   all_tags = merge(

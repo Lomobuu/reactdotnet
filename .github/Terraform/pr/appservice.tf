@@ -26,6 +26,10 @@ resource "azurerm_app_service" "AppSvc" {
     acr_use_managed_identity_credentials = true
   }
 
+  app_settings = {
+    APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.appi.connection_string
+  }
+
     identity {
     type = "SystemAssigned"
   }
@@ -48,8 +52,4 @@ resource "azurerm_role_assignment" "acrrole" {
   role_definition_name = "AcrPull"
   scope                = azurerm_container_registry.acr.id
   principal_id         = azurerm_app_service.AppSvc.identity[0].principal_id
-}
-
-output "webapp_name" {
-  value = azurerm_app_service.AppSvc.name
 }
