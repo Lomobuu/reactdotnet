@@ -171,6 +171,7 @@ Usually the issue is with the Docker Image. Check AcrPull permission(especially 
 ### Error Resource group not found
 Error in GitHub actions workflow
 Check if resource group exists in the current subscription AND check if the service principal has the correct permission for the correct scope
-### fedcred example
-environment example
+### Federated credentials error
+<img src="docs/error3.png">
 
+Check that the environment is created and the federated credentials is set up properly. The branch, org and repo names are case sensitive.
