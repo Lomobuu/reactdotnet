@@ -128,10 +128,12 @@ The only differences are that it creates a new resource group(instead of using d
 
 ### .github/workflow
 Contains the CI/CD pipelines / github actions workflow
-### reactapp.client
+### /reactapp.client
 Frontend of react application
-### reactapp.Server
+### /reactapp.Server
 Backend of react application
+### /docs
+Documentation Images
 # Deployment & Data Flow
 Data flow for the Ephemeral Environment
 <img src="docs/Ephemeral Enviornments.jpg">
