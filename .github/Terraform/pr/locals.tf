@@ -23,6 +23,9 @@ locals {
   log_analytics_name = "${local.base}-log-${local.env}"
   appi_name = "${local.base}-appi-${local.env}"
 
+  sql_server_name = "${local.base}-sqlserver-${local.env}"
+  sql_db_name = "${local.base}-sqldb-${local.env}"
+
   # Tags
   all_tags = merge(
     {

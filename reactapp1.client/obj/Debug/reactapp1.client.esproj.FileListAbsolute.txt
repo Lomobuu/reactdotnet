@@ -1,1 +1,2 @@
 C:\Users\sfossen\OneDrive - Capgemini\Documents\Git\reactdotnet\reactapp1.client\obj\Debug\reactapp1.client.esproj.CoreCompileInputs.cache
+C:\Users\simen.fossen\Documents\git\reactdotnet\reactapp1.client\obj\Debug\reactapp1.client.esproj.CoreCompileInputs.cache

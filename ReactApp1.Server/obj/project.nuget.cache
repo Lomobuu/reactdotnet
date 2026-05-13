@@ -1,13 +1,16 @@
 {
   "version": 2,
-  "dgSpecHash": "8sWatGNNwT0=",
+  "dgSpecHash": "yZmiq3Ciyyw=",
   "success": true,
-  "projectFilePath": "C:\\Users\\sfossen\\OneDrive - Capgemini\\Documents\\Git\\reactdotnet\\ReactApp1.Server\\ReactApp1.Server.csproj",
+  "projectFilePath": "C:\\Users\\simen.fossen\\Documents\\git\\reactdotnet\\ReactApp1.Server\\ReactApp1.Server.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\sfossen\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.1\\microsoft.aspnetcore.openapi.10.0.1.nupkg.sha512",
-    "C:\\Users\\sfossen\\.nuget\\packages\\microsoft.aspnetcore.spaproxy\\10.0.2\\microsoft.aspnetcore.spaproxy.10.0.2.nupkg.sha512",
-    "C:\\Users\\sfossen\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512",
-    "C:\\Users\\sfossen\\.nuget\\packages\\microsoft.visualstudio.azure.containers.tools.targets\\1.23.0\\microsoft.visualstudio.azure.containers.tools.targets.1.23.0.nupkg.sha512"
+    "C:\\Users\\simen.fossen\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.1\\microsoft.aspnetcore.openapi.10.0.1.nupkg.sha512",
+    "C:\\Users\\simen.fossen\\.nuget\\packages\\microsoft.aspnetcore.spaproxy\\10.0.8\\microsoft.aspnetcore.spaproxy.10.0.8.nupkg.sha512",
+    "C:\\Users\\simen.fossen\\.nuget\\packages\\microsoft.entityframeworkcore\\10.0.8\\microsoft.entityframeworkcore.10.0.8.nupkg.sha512",
+    "C:\\Users\\simen.fossen\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\10.0.8\\microsoft.entityframeworkcore.abstractions.10.0.8.nupkg.sha512",
+    "C:\\Users\\simen.fossen\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\10.0.8\\microsoft.entityframeworkcore.analyzers.10.0.8.nupkg.sha512",
+    "C:\\Users\\simen.fossen\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512",
+    "C:\\Users\\simen.fossen\\.nuget\\packages\\microsoft.visualstudio.azure.containers.tools.targets\\1.23.0\\microsoft.visualstudio.azure.containers.tools.targets.1.23.0.nupkg.sha512"
   ],
   "logs": []
 }

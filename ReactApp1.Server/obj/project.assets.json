@@ -24,7 +24,7 @@
           "build/Microsoft.AspNetCore.OpenApi.targets": {}
         }
       },
-      "Microsoft.AspNetCore.SpaProxy/10.0.2": {
+      "Microsoft.AspNetCore.SpaProxy/10.0.8": {
         "type": "package",
         "compile": {
           "lib/net10.0/Microsoft.AspNetCore.SpaProxy.dll": {}
@@ -38,6 +38,42 @@
         "build": {
           "build/Microsoft.AspNetCore.SpaProxy.targets": {}
         }
+      },
+      "Microsoft.EntityFrameworkCore/10.0.8": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Abstractions": "10.0.8",
+          "Microsoft.EntityFrameworkCore.Analyzers": "10.0.8"
+        },
+        "compile": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net10.0/Microsoft.EntityFrameworkCore.props": {}
+        }
+      },
+      "Microsoft.EntityFrameworkCore.Abstractions/10.0.8": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.EntityFrameworkCore.Analyzers/10.0.8": {
+        "type": "package"
       },
       "Microsoft.OpenApi/2.0.0": {
         "type": "package",
@@ -80,10 +116,10 @@
         "microsoft.aspnetcore.openapi.nuspec"
       ]
     },
-    "Microsoft.AspNetCore.SpaProxy/10.0.2": {
-      "sha512": "kcXcAbHM4zCnQSbA0bKPbUcYup+z+bgL4+Jhf6qRICABDEVRPn5HCT8rZnLYfoocVvw3fixDiC8T004T+HPAjA==",
+    "Microsoft.AspNetCore.SpaProxy/10.0.8": {
+      "sha512": "cEd54UPTq1CGPFLfptXbAM6OiwLi7Rrrue1eDxUmJXG2A5/M+a56xgmDTt1N8tFDjX2eYWYFsu9ufFFxXWEf0w==",
       "type": "package",
-      "path": "microsoft.aspnetcore.spaproxy/10.0.2",
+      "path": "microsoft.aspnetcore.spaproxy/10.0.8",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -91,8 +127,53 @@
         "THIRD-PARTY-NOTICES.TXT",
         "build/Microsoft.AspNetCore.SpaProxy.targets",
         "lib/net10.0/Microsoft.AspNetCore.SpaProxy.dll",
-        "microsoft.aspnetcore.spaproxy.10.0.2.nupkg.sha512",
+        "microsoft.aspnetcore.spaproxy.10.0.8.nupkg.sha512",
         "microsoft.aspnetcore.spaproxy.nuspec"
+      ]
+    },
+    "Microsoft.EntityFrameworkCore/10.0.8": {
+      "sha512": "EJx+fIBMgBlgD+ublKCn+GTOJkw3UqV7xOjYWBRVdUYyIm8UfvAsmSOPFiIInsWTHyMEYUJ9gCJY1jwX+6UB7w==",
+      "type": "package",
+      "path": "microsoft.entityframeworkcore/10.0.8",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "buildTransitive/net10.0/Microsoft.EntityFrameworkCore.props",
+        "lib/net10.0/Microsoft.EntityFrameworkCore.dll",
+        "lib/net10.0/Microsoft.EntityFrameworkCore.xml",
+        "microsoft.entityframeworkcore.10.0.8.nupkg.sha512",
+        "microsoft.entityframeworkcore.nuspec"
+      ]
+    },
+    "Microsoft.EntityFrameworkCore.Abstractions/10.0.8": {
+      "sha512": "jbKDXWPZQhuPHygMnwzNOqxBADVcpRVytcKYZsA++QqhPkpF93Ta8o5mbJQGrARSjlkr9WtOaADV97EDMOZ7DA==",
+      "type": "package",
+      "path": "microsoft.entityframeworkcore.abstractions/10.0.8",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll",
+        "lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.xml",
+        "microsoft.entityframeworkcore.abstractions.10.0.8.nupkg.sha512",
+        "microsoft.entityframeworkcore.abstractions.nuspec"
+      ]
+    },
+    "Microsoft.EntityFrameworkCore.Analyzers/10.0.8": {
+      "sha512": "M3BZ8JH8rB6BE7dO2g9iVbrHLnEz9wMXT6q+tDR6Nq3gyP3KmBj5OTiZGxyF3vesjOQNKanYoPGSNBR4kR2llg==",
+      "type": "package",
+      "path": "microsoft.entityframeworkcore.analyzers/10.0.8",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "analyzers/dotnet/cs/Microsoft.EntityFrameworkCore.Analyzers.dll",
+        "docs/PACKAGE.md",
+        "microsoft.entityframeworkcore.analyzers.10.0.8.nupkg.sha512",
+        "microsoft.entityframeworkcore.analyzers.nuspec"
       ]
     },
     "Microsoft.OpenApi/2.0.0": {
@@ -198,27 +279,28 @@
     "net10.0": [
       "Microsoft.AspNetCore.OpenApi >= 10.0.1",
       "Microsoft.AspNetCore.SpaProxy >= 10.*-*",
+      "Microsoft.EntityFrameworkCore >= 10.0.8",
       "Microsoft.VisualStudio.Azure.Containers.Tools.Targets >= 1.23.0"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\sfossen\\.nuget\\packages\\": {},
+    "C:\\Users\\simen.fossen\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\sfossen\\OneDrive - Capgemini\\Documents\\Git\\reactdotnet\\ReactApp1.Server\\ReactApp1.Server.csproj",
+      "projectUniqueName": "C:\\Users\\simen.fossen\\Documents\\git\\reactdotnet\\ReactApp1.Server\\ReactApp1.Server.csproj",
       "projectName": "ReactApp1.Server",
-      "projectPath": "C:\\Users\\sfossen\\OneDrive - Capgemini\\Documents\\Git\\reactdotnet\\ReactApp1.Server\\ReactApp1.Server.csproj",
-      "packagesPath": "C:\\Users\\sfossen\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\sfossen\\OneDrive - Capgemini\\Documents\\Git\\reactdotnet\\ReactApp1.Server\\obj\\",
+      "projectPath": "C:\\Users\\simen.fossen\\Documents\\git\\reactdotnet\\ReactApp1.Server\\ReactApp1.Server.csproj",
+      "packagesPath": "C:\\Users\\simen.fossen\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\simen.fossen\\Documents\\git\\reactdotnet\\ReactApp1.Server\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\sfossen\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\simen.fossen\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -231,6 +313,7 @@
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {}
         }
@@ -245,10 +328,11 @@
         "auditLevel": "low",
         "auditMode": "all"
       },
-      "SdkAnalysisLevel": "10.0.100"
+      "SdkAnalysisLevel": "10.0.200"
     },
     "frameworks": {
       "net10.0": {
+        "framework": "net10.0",
         "targetAlias": "net10.0",
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": {
@@ -258,6 +342,10 @@
           "Microsoft.AspNetCore.SpaProxy": {
             "target": "Package",
             "version": "[10.*-*, )"
+          },
+          "Microsoft.EntityFrameworkCore": {
+            "target": "Package",
+            "version": "[10.0.8, )"
           },
           "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": {
             "target": "Package",
@@ -283,7 +371,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.203/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
