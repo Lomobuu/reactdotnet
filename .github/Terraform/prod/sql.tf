@@ -1,7 +1,7 @@
 resource "azurerm_mssql_server" "sqlServer" {
   name                         = local.sql_server_name
-  resource_group_name          = azurerm_resource_group.rg.name
-  location                     = azurerm_resource_group.rg.location
+  resource_group_name          = data.azurerm_resource_group.rg.name
+  location                     = data.azurerm_resource_group.rg.location
   administrator_login          = "mradministrator"
   administrator_login_password = azurerm_key_vault_secret.admin-pw.value
   version                      = "12.0" # required, fixed for Azure SQL
