@@ -1,7 +1,7 @@
 data "azurerm_client_config" "current" {}
 
-resource "azurerm_key_vault" "example" {
-  name                        = "reactdotnet-kv-${var.environment}" ## must be name between 3-24
+resource "azurerm_key_vault" "keyvault" {
+  name                        = local.kv_name
   location                    = azurerm_resource_group.rg.location
   resource_group_name         = azurerm_resource_group.rg.name
   enabled_for_disk_encryption = true
