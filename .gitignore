@@ -28,7 +28,6 @@ out/
 ############################
 
 # NEVER commit secrets
-ReactApp1.Server\appsettings.Development.json
 appsettings.Development.json
 appsettings.*.Local.json
 
@@ -85,4 +84,8 @@ Thumbs.db
 ############################
 
 *.zip
+<<<<<<< HEAD
 *.tar.gz
+=======
+*.tar.gz
+>>>>>>> c94a189 (small change to gitignore)
