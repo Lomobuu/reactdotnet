@@ -84,8 +84,3 @@ Thumbs.db
 ############################
 
 *.zip
-<<<<<<< HEAD
-*.tar.gz
-=======
-*.tar.gz
->>>>>>> c94a189 (small change to gitignore)
