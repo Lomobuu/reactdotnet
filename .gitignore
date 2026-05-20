@@ -28,6 +28,7 @@ out/
 ############################
 
 # NEVER commit secrets
+ReactApp1.Server\appsettings.Development.json
 appsettings.Development.json
 appsettings.*.Local.json
 
@@ -77,16 +78,7 @@ Thumbs.db
 
 *.tmp
 *.swp
-*.bak
-
-############################
-# Azure / Terraform (optional for your setup)
-############################
-
-.terraform/
-*.tfstate
-*.tfstate.*
-crash.log
+*.bakW
 
 ############################
 # GitHub / CI artifacts
