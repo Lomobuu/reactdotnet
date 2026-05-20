@@ -1,5 +1,96 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
+﻿############################
+# .NET / Visual Studio
+############################
 
-/.vs
+bin/
+obj/
+out/
+.env
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Logs
+*.log
+
+# Visual Studio directories
+.vs/
+.vscode/
+
+# Rider / Resharper
+.idea/
+
+############################
+# ASP.NET / Config secrets
+############################
+
+# NEVER commit secrets
+appsettings.Development.json
+appsettings.*.Local.json
+
+# Optional: ignore all env-specific configs
+# appsettings.*.json
+
+# Secrets manager
+secrets.json
+
+############################
+# Node / React / Vite
+############################
+
+node_modules/
+dist/
+build/
+.cache/
+coverage/
+
+# Vite
+.vite/
+
+# Package manager logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+############################
+# Environment files
+############################
+
+.env
+.env.*
+!.env.example   # keep template
+
+############################
+# OS / misc
+############################
+
+.DS_Store
+Thumbs.db
+
+############################
+# Testing / temp
+############################
+
+*.tmp
+*.swp
+*.bak
+
+############################
+# Azure / Terraform (optional for your setup)
+############################
+
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+############################
+# GitHub / CI artifacts
+############################
+
+*.zip
+*.tar.gz
