@@ -26,14 +26,10 @@ resource "azurerm_app_service" "AppSvc" {
     acr_use_managed_identity_credentials = true
   }
 
-    app_settings = {
-    APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.appi.connection_string
-  }
-    connection_string {
-    name  = "Database"
-    type  = "SQLAzure"
-    value = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.ConnectionStringSecret.id})"
-  }
+app_settings = {
+  APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.appi.connection_string
+  "ConnectionStrings__Database"         = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.ConnectionStringSecret.id})"
+}
 
     identity {
     type = "SystemAssigned"
