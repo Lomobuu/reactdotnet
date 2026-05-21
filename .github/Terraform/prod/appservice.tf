@@ -28,7 +28,7 @@ resource "azurerm_app_service" "AppSvc" {
 
 app_settings = {
   APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.appi.connection_string
-  "ConnectionStrings__Database"         = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.ConnectionStringSecret.id})"
+  "ConnectionStrings__DefaultConnection"         = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.ConnectionStringSecret.id})"
 }
 
     identity {
