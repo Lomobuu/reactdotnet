@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { getProblems } from "../services/api";
 import ProblemDetail from "./ProblemDetail";
 import BoardVisualization from "./BoardVisualization";
+import { getProblems, deleteProblem } from "../services/api";
 
 const GRADES = ['V0', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10'];
 
@@ -29,7 +29,7 @@ export default function ProblemList() {
     const handleDelete = async (e, p) => {
         e.stopPropagation();
         if (confirmDelete === p.id) {
-            await fetch(`https://localhost:7127/api/problems/${p.id}`, { method: 'DELETE' });
+            await deleteProblem(p.id);
             setConfirmDelete(null);
             setSelected(null);
             setSelectedHolds([]);

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createHold } from "../services/api";
 
 const HOLD_TYPES = ['Jug', 'Crimp', 'Sloper', 'Pinch', 'Plastic Foothold'];
 const COLORS = ['Red', 'Blue', 'Green', 'Yellow', 'White', 'Black', 'Orange', 'Purple', 'Light', 'Brown'];
@@ -38,15 +39,11 @@ export default function HoldForm({ onHoldCreated }) {
 
     const handleSubmit = async () => {
         setLoading(true);
-        await fetch('https://localhost:7127/api/holds', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+        await createHold(form)({
                 ...form,
                 positionX: parseFloat(form.positionX),
                 positionY: parseFloat(form.positionY),
             }),
-        });
         setLoading(false);
         setSuccess(true);
         setForm({ name: '', type: '', color: '', position: '', positionX: null, positionY: null });

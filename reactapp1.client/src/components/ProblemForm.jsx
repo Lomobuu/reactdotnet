@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createProblem, createProblemHold } from "../services/api";
 
 const GRID_SIZE = 240;
 const DISPLAY_SIZE = 400;
@@ -71,23 +72,14 @@ export default function ProblemForm({ holds, onProblemCreated }) {
         if (!problem.name || problemHolds.length === 0) return;
         setLoading(true);
 
-        const res = await fetch('https://localhost:7127/api/problems', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(problem),
-        });
-        const created = await res.json();
+        const created = await createProblem(problem);
 
         for (const ph of problemHolds) {
-            await fetch('https://localhost:7127/api/problemholds', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    problemId: created.id,
-                    holdId: ph.hold.id,
-                    holdOrder: ph.holdOrder,
-                    role: ph.role,
-                }),
+            await createProblemHold({
+                problemId: created.id,
+                holdId: ph.hold.id,
+                holdOrder: ph.holdOrder,
+                role: ph.role,
             });
         }
 
