@@ -5,6 +5,11 @@ import { getProblems, deleteProblem } from "../services/api";
 
 const GRADES = ['V0', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10'];
 
+const gradeOrder = (grade) => {
+    const index = GRADES.indexOf(grade);
+    return index === -1 ? 999 : index;
+};
+
 export default function ProblemList() {
     const [problems, setProblems] = useState([]);
     const [selected, setSelected] = useState(null);
@@ -12,6 +17,7 @@ export default function ProblemList() {
     const [confirmDelete, setConfirmDelete] = useState(null);
     const [filterGrade, setFilterGrade] = useState('');
     const [filterName, setFilterName] = useState('');
+    const [sortDir, setSortDir] = useState('asc'); // asc = V0 first, desc = V10 first
 
     const fetchProblems = () => {
         getProblems().then(setProblems);
@@ -39,18 +45,23 @@ export default function ProblemList() {
         }
     };
 
-    const filtered = problems.filter(p => {
-        const matchGrade = filterGrade === '' || p.grade === filterGrade;
-        const matchName = filterName === '' || p.name.toLowerCase().includes(filterName.toLowerCase());
-        return matchGrade && matchName;
-    });
+    const filtered = problems
+        .filter(p => {
+            const matchGrade = filterGrade === '' || p.grade === filterGrade;
+            const matchName = filterName === '' || p.name.toLowerCase().includes(filterName.toLowerCase());
+            return matchGrade && matchName;
+        })
+        .sort((a, b) => {
+            const diff = gradeOrder(a.grade) - gradeOrder(b.grade);
+            return sortDir === 'asc' ? diff : -diff;
+        });
 
     return (
         <div className="w-full">
             <h1 className="text-2xl font-bold mb-4 text-gray-900">Boulder Problems</h1>
 
-            {/* Filters */}
-            <div className="flex gap-3 mb-4">
+            {/* Filters and sort */}
+            <div className="flex gap-3 mb-4 items-center flex-wrap">
                 <input
                     value={filterName}
                     onChange={e => setFilterName(e.target.value)}
@@ -65,12 +76,21 @@ export default function ProblemList() {
                     <option value="">All grades</option>
                     {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
+
+                {/* Sort toggle */}
+                <button
+                    onClick={() => setSortDir(prev => prev === 'asc' ? 'desc' : 'asc')}
+                    style={{ background: '#e5e7eb', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '13px', cursor: 'pointer', color: '#374151' }}
+                >
+                    Grade {sortDir === 'asc' ? 'V0 → V10 ↑' : 'V10 → V0 ↓'}
+                </button>
+
                 {(filterGrade || filterName) && (
                     <button
                         onClick={() => { setFilterGrade(''); setFilterName(''); }}
                         style={{ background: '#e5e7eb', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '13px', cursor: 'pointer', color: '#374151' }}
                     >
-                        Clear
+                        Clear filters
                     </button>
                 )}
             </div>
