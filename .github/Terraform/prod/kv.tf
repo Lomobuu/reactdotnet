@@ -35,7 +35,7 @@ resource "azurerm_role_assignment" "kv_admin" {
 resource "azurerm_key_vault_secret" "ConnectionStringSecret" {
   name = "sql-connectionstring"
 
-  value = "sqlserver://${azurerm_mssql_server.sqlServer.name}.database.windows.net:1433;database=${azurerm_mssql_database.sqlDB.name};user=${azurerm_mssql_server.sqlServer.administrator_login};password=${azurerm_mssql_server.sqlServer.administrator_login_password};encrypt=true;trustServerCertificate=false"
+  value = "Server=tcp:${azurerm_mssql_server.sqlServer.name}.database.windows.net,1433;Initial Catalog=${azurerm_mssql_database.sqlDB.name};User ID=${azurerm_mssql_server.sqlServer.administrator_login};Password=${azurerm_mssql_server.sqlServer.administrator_login_password};encrypt=true;trustServerCertificate=false"
 
   key_vault_id = azurerm_key_vault.keyvault.id
 
