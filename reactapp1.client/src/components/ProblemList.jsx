@@ -3,10 +3,15 @@ import { getProblems } from "../services/api";
 import ProblemDetail from "./ProblemDetail";
 import BoardVisualization from "./BoardVisualization";
 
+const GRADES = ['V0', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10'];
+
 export default function ProblemList() {
     const [problems, setProblems] = useState([]);
     const [selected, setSelected] = useState(null);
     const [selectedHolds, setSelectedHolds] = useState([]);
+    const [confirmDelete, setConfirmDelete] = useState(null);
+    const [filterGrade, setFilterGrade] = useState('');
+    const [filterName, setFilterName] = useState('');
 
     const fetchProblems = () => {
         getProblems().then(setProblems);
@@ -21,8 +26,6 @@ export default function ProblemList() {
         setSelectedHolds([]);
     };
 
-    const [confirmDelete, setConfirmDelete] = useState(null);
-
     const handleDelete = async (e, p) => {
         e.stopPropagation();
         if (confirmDelete === p.id) {
@@ -36,15 +39,49 @@ export default function ProblemList() {
         }
     };
 
-
+    const filtered = problems.filter(p => {
+        const matchGrade = filterGrade === '' || p.grade === filterGrade;
+        const matchName = filterName === '' || p.name.toLowerCase().includes(filterName.toLowerCase());
+        return matchGrade && matchName;
+    });
 
     return (
         <div className="w-full">
             <h1 className="text-2xl font-bold mb-4 text-gray-900">Boulder Problems</h1>
+
+            {/* Filters */}
+            <div className="flex gap-3 mb-4">
+                <input
+                    value={filterName}
+                    onChange={e => setFilterName(e.target.value)}
+                    placeholder="Search by name..."
+                    className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-400 w-48"
+                />
+                <select
+                    value={filterGrade}
+                    onChange={e => setFilterGrade(e.target.value)}
+                    className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-400"
+                >
+                    <option value="">All grades</option>
+                    {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
+                </select>
+                {(filterGrade || filterName) && (
+                    <button
+                        onClick={() => { setFilterGrade(''); setFilterName(''); }}
+                        style={{ background: '#e5e7eb', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '13px', cursor: 'pointer', color: '#374151' }}
+                    >
+                        Clear
+                    </button>
+                )}
+            </div>
+
             <div className="flex gap-6">
                 {/* Problem list */}
                 <div className="flex flex-col gap-2 w-96">
-                    {problems.map(p => (
+                    {filtered.length === 0 && (
+                        <p className="text-gray-400 text-sm">No problems match your filters.</p>
+                    )}
+                    {filtered.map(p => (
                         <div key={p.id} className="border border-gray-200 rounded bg-white">
                             <div className="flex items-center">
                                 <button

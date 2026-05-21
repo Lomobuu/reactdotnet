@@ -6,15 +6,6 @@ const COLORS = ['Red', 'Blue', 'Green', 'Yellow', 'White', 'Black', 'Orange', 'P
 const GRID_SIZE = 240;
 const DISPLAY_SIZE = 480;
 const SCALE = DISPLAY_SIZE / GRID_SIZE;
-const STEP = 20; // grid dot every 20px
-
-// Generate all grid points
-const gridPoints = [];
-for (let x = 0; x <= GRID_SIZE; x += STEP) {
-    for (let y = 0; y <= GRID_SIZE; y += STEP) {
-        gridPoints.push({ x, y });
-    }
-}
 
 export default function HoldForm({ onHoldCreated }) {
     const [form, setForm] = useState({
@@ -34,12 +25,16 @@ export default function HoldForm({ onHoldCreated }) {
         setForm(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleGridClick = (x, y) => {
-        setForm(prev => ({ ...prev, positionX: x, positionY: y }));
+    const handleBoardClick = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = Math.round((e.clientX - rect.left) / SCALE);
+        const y = Math.round((e.clientY - rect.top) / SCALE);
+        setForm(prev => ({
+            ...prev,
+            positionX: Math.max(0, Math.min(GRID_SIZE, x)),
+            positionY: Math.max(0, Math.min(GRID_SIZE, y)),
+        }));
     };
-
-    const isSelected = (x, y) =>
-        form.positionX === x && form.positionY === y;
 
     const handleSubmit = async () => {
         setLoading(true);
@@ -69,20 +64,27 @@ export default function HoldForm({ onHoldCreated }) {
                 <svg
                     width={DISPLAY_SIZE}
                     height={DISPLAY_SIZE}
-                    style={{ border: '2px solid #e5e7eb', borderRadius: '8px', background: '#1a1a2e', cursor: 'pointer' }}
+                    onClick={handleBoardClick}
+                    style={{ border: '2px solid #e5e7eb', borderRadius: '8px', cursor: 'crosshair' }}
                 >
-                    {gridPoints.map(({ x, y }) => (
+                    <image
+                        href="/src/assets/board.png"
+                        x="0"
+                        y="0"
+                        width={DISPLAY_SIZE}
+                        height={DISPLAY_SIZE}
+                        preserveAspectRatio="xMidYMid slice"
+                    />
+                    {form.positionX !== null && (
                         <circle
-                            key={`${x}-${y}`}
-                            cx={x * SCALE}
-                            cy={y * SCALE}
-                            r={isSelected(x, y) ? 12 : 8}
-                            fill={isSelected(x, y) ? '#3b82f6' : '#4b5563'}
-                            opacity={isSelected(x, y) ? 1 : 0.5}
-                            onClick={() => handleGridClick(x, y)}
-                            style={{ cursor: 'pointer' }}
+                            cx={form.positionX * SCALE}
+                            cy={form.positionY * SCALE}
+                            r={10}
+                            fill="#3b82f6"
+                            opacity={0.85}
+                            style={{ pointerEvents: 'none' }}
                         />
-                    ))}
+                    )}
                 </svg>
             </div>
 

@@ -4,7 +4,6 @@ import { deleteHold, updateHold } from "../services/api";
 const GRID_SIZE = 240;
 const DISPLAY_SIZE = 480;
 const SCALE = DISPLAY_SIZE / GRID_SIZE;
-const STEP = 20;
 
 const typeColors = {
     'jug': '#3b82f6',
@@ -24,9 +23,6 @@ const typeIcon = (type) => {
         default: return '👋';
     }
 };
-
-const snapToGrid = (val) => Math.round(val / STEP) * STEP;
-
 export default function HoldMap({ holds, onHoldsChanged, onHoldClick, highlightedIds = [] }) {
     const [hovered, setHovered] = useState(null);
     const [selected, setSelected] = useState(null);
@@ -35,8 +31,8 @@ export default function HoldMap({ holds, onHoldsChanged, onHoldClick, highlighte
 
     const getSVGCoords = (e) => {
         const rect = svgRef.current.getBoundingClientRect();
-        const x = snapToGrid((e.clientX - rect.left) / SCALE);
-        const y = snapToGrid((e.clientY - rect.top) / SCALE);
+        const x = Math.round((e.clientX - rect.left) / SCALE);
+        const y = Math.round((e.clientY - rect.top) / SCALE);
         return {
             x: Math.max(0, Math.min(GRID_SIZE, x)),
             y: Math.max(0, Math.min(GRID_SIZE, y))
@@ -104,7 +100,7 @@ export default function HoldMap({ holds, onHoldsChanged, onHoldClick, highlighte
                     style={{ border: '2px solid #e5e7eb', borderRadius: '8px', cursor: dragging ? 'grabbing' : 'default' }}
                 >
                     <image
-                        href="/src/assets/board.jpg"
+                        href="/src/assets/board.png"
                         x="0"
                         y="0"
                         width={DISPLAY_SIZE}

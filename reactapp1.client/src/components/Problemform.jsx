@@ -27,6 +27,16 @@ const getColor = (hold, role) => {
     }
 };
 
+const groupByHold = (problemHolds) => {
+    const grouped = {};
+    problemHolds.forEach(ph => {
+        const key = ph.hold.id;
+        if (!grouped[key]) grouped[key] = { hold: ph.hold, entries: [] };
+        grouped[key].entries.push({ order: ph.holdOrder, role: ph.role });
+    });
+    return grouped;
+};
+
 export default function ProblemForm({ holds, onProblemCreated }) {
     const [problem, setProblem] = useState({ name: '', grade: '', description: '' });
     const [problemHolds, setProblemHolds] = useState([]);
@@ -90,6 +100,8 @@ export default function ProblemForm({ holds, onProblemCreated }) {
         if (onProblemCreated) onProblemCreated();
     };
 
+    const grouped = groupByHold(problemHolds);
+
     return (
         <div className="flex flex-col gap-6">
             {/* Problem details */}
@@ -137,7 +149,7 @@ export default function ProblemForm({ holds, onProblemCreated }) {
                         style={{ border: '2px solid #e5e7eb', borderRadius: '8px' }}
                     >
                         <image
-                            href="/src/assets/board.jpg"
+                            href="/src/assets/board.png"
                             x="0"
                             y="0"
                             width={DISPLAY_SIZE}
@@ -177,7 +189,7 @@ export default function ProblemForm({ holds, onProblemCreated }) {
                     </svg>
                 </div>
 
-                {/* Right board — problem holds only */}
+                {/* Right board — problem holds grouped */}
                 <div>
                     <p className="text-sm text-gray-600 mb-2 font-semibold">Problem Board</p>
                     <svg
@@ -186,35 +198,49 @@ export default function ProblemForm({ holds, onProblemCreated }) {
                         style={{ border: '2px solid #e5e7eb', borderRadius: '8px' }}
                     >
                         <image
-                            href="/src/assets/board.jpg"
+                            href="/src/assets/board.png"
                             x="0"
                             y="0"
                             width={DISPLAY_SIZE}
                             height={DISPLAY_SIZE}
                             preserveAspectRatio="xMidYMid slice"
                         />
-                        {problemHolds.map((ph, index) => (
-                            <g key={index}>
-                                <circle
-                                    cx={ph.hold.positionX * SCALE}
-                                    cy={ph.hold.positionY * SCALE}
-                                    r={10}
-                                    fill={getColor(ph.hold, ph.role)}
-                                    opacity={0.85}
-                                />
-                                <text
-                                    x={ph.hold.positionX * SCALE}
-                                    y={ph.hold.positionY * SCALE + 4}
-                                    textAnchor="middle"
-                                    fontSize="9"
-                                    fill="white"
-                                    fontWeight="bold"
-                                    style={{ pointerEvents: 'none', userSelect: 'none' }}
-                                >
-                                    {ph.holdOrder}
-                                </text>
-                            </g>
-                        ))}
+                        {Object.values(grouped).map(({ hold, entries }) => {
+                            const x = hold.positionX * SCALE;
+                            const y = hold.positionY * SCALE;
+                            const total = entries.length;
+                            const sorted = [...entries].sort((a, b) => a.order - b.order);
+
+                            return (
+                                <g key={hold.id}>
+                                    {sorted.map((entry, i) => {
+                                        const offsetX = total > 1 ? (i - (total - 1) / 2) * 18 : 0;
+                                        return (
+                                            <g key={entry.order}>
+                                                <circle
+                                                    cx={x + offsetX}
+                                                    cy={y}
+                                                    r={10}
+                                                    fill={getColor(hold, entry.role)}
+                                                    opacity={0.85}
+                                                />
+                                                <text
+                                                    x={x + offsetX}
+                                                    y={y + 4}
+                                                    textAnchor="middle"
+                                                    fontSize="9"
+                                                    fill="white"
+                                                    fontWeight="bold"
+                                                    style={{ pointerEvents: 'none', userSelect: 'none' }}
+                                                >
+                                                    {entry.order}
+                                                </text>
+                                            </g>
+                                        );
+                                    })}
+                                </g>
+                            );
+                        })}
                     </svg>
                 </div>
 
@@ -263,7 +289,9 @@ export default function ProblemForm({ holds, onProblemCreated }) {
                             <p className="font-semibold text-gray-900 mb-1">Holds in Problem</p>
                             {problemHolds.map((ph, index) => (
                                 <div key={index} className="flex items-center justify-between text-sm">
-                                    <span className="text-gray-700">{ph.holdOrder}. {ph.hold.name} <span className="text-gray-400">({ph.role})</span></span>
+                                    <span className="text-gray-700">
+                                        {ph.holdOrder}. {ph.hold.name} <span className="text-gray-400">({ph.role})</span>
+                                    </span>
                                     <button
                                         onClick={() => handleRemoveHold(index)}
                                         style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0 4px', fontSize: '16px' }}
