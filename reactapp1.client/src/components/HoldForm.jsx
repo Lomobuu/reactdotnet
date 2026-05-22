@@ -1,14 +1,27 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createHold } from "../services/api";
 
 const HOLD_TYPES = ['Jug', 'Crimp', 'Sloper', 'Pinch', 'Plastic Foothold'];
 const COLORS = ['Red', 'Blue', 'Green', 'Yellow', 'White', 'Black', 'Orange', 'Purple', 'Light', 'Brown'];
 
 const GRID_SIZE = 240;
-const DISPLAY_SIZE = 480;
-const SCALE = DISPLAY_SIZE / GRID_SIZE;
 
 export default function HoldForm({ onHoldCreated }) {
+    const containerRef = useRef(null);
+    const [displaySize, setDisplaySize] = useState(480);
+
+    useEffect(() => {
+        const observer = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                setDisplaySize(Math.min(480, entry.contentRect.width));
+            }
+        });
+        if (containerRef.current) observer.observe(containerRef.current);
+        return () => observer.disconnect();
+    }, []);
+
+    const SCALE = displaySize / GRID_SIZE;
+
     const [form, setForm] = useState({
         name: '',
         type: '',
@@ -39,11 +52,11 @@ export default function HoldForm({ onHoldCreated }) {
 
     const handleSubmit = async () => {
         setLoading(true);
-        await createHold(form)({
-                ...form,
-                positionX: parseFloat(form.positionX),
-                positionY: parseFloat(form.positionY),
-            }),
+        await createHold({
+            ...form,
+            positionX: parseFloat(form.positionX),
+            positionY: parseFloat(form.positionY),
+        });
         setLoading(false);
         setSuccess(true);
         setForm({ name: '', type: '', color: '', position: '', positionX: null, positionY: null });
@@ -54,22 +67,22 @@ export default function HoldForm({ onHoldCreated }) {
     const canSubmit = form.name && form.type && form.color && form.positionX !== null;
 
     return (
-        <div className="flex gap-8">
-            {/* Board */}
-            <div>
+        <div className="flex flex-col gap-6 w-full">
+            {/* Board — full width, scales to screen */}
+            <div ref={containerRef} className="w-full">
                 <p className="text-sm text-gray-600 mb-2 font-semibold">Click to place hold</p>
                 <svg
-                    width={DISPLAY_SIZE}
-                    height={DISPLAY_SIZE}
+                    width={displaySize}
+                    height={displaySize}
                     onClick={handleBoardClick}
-                    style={{ border: '2px solid #e5e7eb', borderRadius: '8px', cursor: 'crosshair' }}
+                    style={{ border: '2px solid #e5e7eb', borderRadius: '8px', cursor: 'crosshair', display: 'block' }}
                 >
                     <image
                         href="/board.png"
                         x="0"
                         y="0"
-                        width={DISPLAY_SIZE}
-                        height={DISPLAY_SIZE}
+                        width={displaySize}
+                        height={displaySize}
                         preserveAspectRatio="xMidYMid slice"
                     />
                     {form.positionX !== null && (
@@ -85,11 +98,10 @@ export default function HoldForm({ onHoldCreated }) {
                 </svg>
             </div>
 
-            {/* Form */}
-            <div className="bg-white border border-gray-200 rounded p-6 w-80 flex flex-col gap-3 h-fit">
+            {/* Form — full width below board */}
+            <div className="bg-white border border-gray-200 rounded p-6 w-full flex flex-col gap-3">
                 <h2 className="text-xl font-bold text-gray-900">Add Hold</h2>
 
-                {/* Selected position */}
                 <div className="text-sm text-gray-500">
                     {form.positionX !== null
                         ? `Position: (${form.positionX}, ${form.positionY})`
@@ -108,32 +120,32 @@ export default function HoldForm({ onHoldCreated }) {
                     />
                 </div>
 
-                {/* Type */}
-                <div>
-                    <label className="text-sm text-gray-600 mb-1 block">Type</label>
-                    <select
-                        name="type"
-                        value={form.type}
-                        onChange={handleChange}
-                        className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-400"
-                    >
-                        <option value="">Select type...</option>
-                        {HOLD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                </div>
-
-                {/* Color */}
-                <div>
-                    <label className="text-sm text-gray-600 mb-1 block">Color</label>
-                    <select
-                        name="color"
-                        value={form.color}
-                        onChange={handleChange}
-                        className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-400"
-                    >
-                        <option value="">Select color...</option>
-                        {COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                {/* Type + Color side by side on mobile too since they're short */}
+                <div className="flex gap-3">
+                    <div className="flex-1">
+                        <label className="text-sm text-gray-600 mb-1 block">Type</label>
+                        <select
+                            name="type"
+                            value={form.type}
+                            onChange={handleChange}
+                            className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-400"
+                        >
+                            <option value="">Select type...</option>
+                            {HOLD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                    </div>
+                    <div className="flex-1">
+                        <label className="text-sm text-gray-600 mb-1 block">Color</label>
+                        <select
+                            name="color"
+                            value={form.color}
+                            onChange={handleChange}
+                            className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-400"
+                        >
+                            <option value="">Select color...</option>
+                            {COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                    </div>
                 </div>
 
                 {/* Position description */}
@@ -148,7 +160,6 @@ export default function HoldForm({ onHoldCreated }) {
                     />
                 </div>
 
-                {/* Submit */}
                 <button
                     onClick={handleSubmit}
                     disabled={loading || !canSubmit}
@@ -157,7 +168,7 @@ export default function HoldForm({ onHoldCreated }) {
                         background: canSubmit ? '#3b82f6' : '#9ca3af',
                         color: 'white',
                         borderRadius: '6px',
-                        padding: '8px 16px',
+                        padding: '12px 16px',
                         fontSize: '14px',
                         fontWeight: '600',
                         cursor: canSubmit ? 'pointer' : 'not-allowed',
