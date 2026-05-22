@@ -1,7 +1,22 @@
+import { useEffect, useRef, useState } from "react";
+
 export default function BoardVisualization({ holds }) {
-    const SIZE = 480;
-    const RADIUS = 14;
-    const SCALE = 2;
+    const containerRef = useRef(null);
+    const [size, setSize] = useState(480);
+
+    useEffect(() => {
+        const observer = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                const width = entry.contentRect.width;
+                setSize(Math.min(480, width));
+            }
+        });
+        if (containerRef.current) observer.observe(containerRef.current);
+        return () => observer.disconnect();
+    }, []);
+
+    const RADIUS = 14 * (size / 480);
+    const SCALE = size / 240;
 
     const getColor = (hold, role) => {
         if (hold.type?.toLowerCase() === 'plastic foothold') return 'yellow';
@@ -21,18 +36,18 @@ export default function BoardVisualization({ holds }) {
     });
 
     return (
-        <div className="mb-4">
+        <div ref={containerRef} className="w-full mb-4">
             <svg
-                width={SIZE}
-                height={SIZE}
-                style={{ border: '2px solid #e5e7eb', borderRadius: '8px' }}
+                width={size}
+                height={size}
+                style={{ border: '2px solid #e5e7eb', borderRadius: '8px', display: 'block' }}
             >
                 <image
                     href="/board.png"
                     x="0"
                     y="0"
-                    width={SIZE}
-                    height={SIZE}
+                    width={size}
+                    height={size}
                     preserveAspectRatio="xMidYMid slice"
                 />
                 {Object.values(grouped).map(({ hold, entries }) => {
@@ -44,7 +59,7 @@ export default function BoardVisualization({ holds }) {
                     return (
                         <g key={hold.id}>
                             {sorted.map((entry, i) => {
-                                const offsetX = total > 1 ? (i - (total - 1) / 2) * 18 : 0;
+                                const offsetX = total > 1 ? (i - (total - 1) / 2) * (RADIUS * 1.4) : 0;
                                 return (
                                     <g key={entry.order}>
                                         <circle
@@ -56,9 +71,9 @@ export default function BoardVisualization({ holds }) {
                                         />
                                         <text
                                             x={x + offsetX}
-                                            y={y + 4}
+                                            y={y + RADIUS * 0.3}
                                             textAnchor="middle"
-                                            fontSize="10"
+                                            fontSize={RADIUS * 0.8}
                                             fill="white"
                                             fontWeight="bold"
                                             style={{ pointerEvents: 'none', userSelect: 'none' }}

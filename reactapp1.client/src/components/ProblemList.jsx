@@ -17,7 +17,7 @@ export default function ProblemList() {
     const [confirmDelete, setConfirmDelete] = useState(null);
     const [filterGrade, setFilterGrade] = useState('');
     const [filterName, setFilterName] = useState('');
-    const [sortDir, setSortDir] = useState('asc'); // asc = V0 first, desc = V10 first
+    const [sortDir, setSortDir] = useState('asc');
 
     const fetchProblems = () => {
         getProblems().then(setProblems);
@@ -61,12 +61,12 @@ export default function ProblemList() {
             <h1 className="text-2xl font-bold mb-4 text-gray-900">Boulder Problems</h1>
 
             {/* Filters and sort */}
-            <div className="flex gap-3 mb-4 items-center flex-wrap">
+            <div className="flex flex-wrap gap-2 mb-4">
                 <input
                     value={filterName}
                     onChange={e => setFilterName(e.target.value)}
                     placeholder="Search by name..."
-                    className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-400 w-48"
+                    className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-400 flex-1 min-w-0"
                 />
                 <select
                     value={filterGrade}
@@ -76,28 +76,27 @@ export default function ProblemList() {
                     <option value="">All grades</option>
                     {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
-
-                {/* Sort toggle */}
                 <button
                     onClick={() => setSortDir(prev => prev === 'asc' ? 'desc' : 'asc')}
                     style={{ background: '#e5e7eb', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '13px', cursor: 'pointer', color: '#374151' }}
                 >
-                    Grade {sortDir === 'asc' ? 'V0 → V10 ↑' : 'V10 → V0 ↓'}
+                    {sortDir === 'asc' ? 'V0 → V10 ↑' : 'V10 → V0 ↓'}
                 </button>
-
                 {(filterGrade || filterName) && (
                     <button
                         onClick={() => { setFilterGrade(''); setFilterName(''); }}
                         style={{ background: '#e5e7eb', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '13px', cursor: 'pointer', color: '#374151' }}
                     >
-                        Clear filters
+                        Clear
                     </button>
                 )}
             </div>
 
-            <div className="flex gap-6">
-                {/* Problem list */}
-                <div className="flex flex-col gap-2 w-96">
+            {/* On mobile: stack vertically. On desktop: side by side */}
+            <div className="flex flex-col lg:flex-row gap-6">
+
+                {/* Problem list — full width on mobile */}
+                <div className="flex flex-col gap-2 w-full lg:w-96">
                     {filtered.length === 0 && (
                         <p className="text-gray-400 text-sm">No problems match your filters.</p>
                     )}
@@ -137,6 +136,11 @@ export default function ProblemList() {
 
                             {selected?.id === p.id && (
                                 <div className="border-t border-gray-200 p-3">
+                                    {/* Board shown inline below problem on mobile */}
+                                    <div className="lg:hidden mb-3">
+                                        <p className="text-sm text-gray-500 mb-2 font-semibold">{p.name}</p>
+                                        <BoardVisualization holds={selectedHolds} />
+                                    </div>
                                     <ProblemDetail problem={p} onHoldsLoaded={setSelectedHolds} />
                                 </div>
                             )}
@@ -144,8 +148,8 @@ export default function ProblemList() {
                     ))}
                 </div>
 
-                {/* Board */}
-                <div className="flex flex-col items-center">
+                {/* Board — hidden on mobile, shown on desktop to the side */}
+                <div className="hidden lg:flex flex-col items-center flex-1">
                     <p className="text-sm text-gray-500 mb-2 font-semibold">
                         {selected ? selected.name : 'No problem selected'}
                     </p>
