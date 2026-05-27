@@ -55,5 +55,14 @@ namespace ReactApp1.Server.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, ProblemHold problemHold)
+        {
+            if (id != problemHold.Id) return BadRequest();
+            _context.Entry(problemHold).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
     }
 }

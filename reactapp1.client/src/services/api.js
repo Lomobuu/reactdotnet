@@ -58,3 +58,15 @@ export const getProblemHolds = async (problemId) => {
     const res = await fetch(`${BASE_URL}/problemholds/byproblem/${problemId}`);
     return res.json();
 };
+
+export const updateProblemHold = async (id, problemHold) => {
+    await fetch(`${BASE_URL}/problemholds/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(problemHold),
+    });
+};
+
+export const deleteProblemHold = async (id) => {
+    await fetch(`${BASE_URL}/problemholds/${id}`, { method: 'DELETE' });
+};

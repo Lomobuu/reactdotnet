@@ -43,7 +43,7 @@ export default function BoardVisualization({ holds }) {
                 style={{ border: '2px solid #e5e7eb', borderRadius: '8px', display: 'block' }}
             >
                 <image
-                    href="/board.png"
+                    href="/board.jpg"
                     x="0"
                     y="0"
                     width={size}

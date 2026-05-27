@@ -100,7 +100,7 @@ export default function HoldMap({ holds, onHoldsChanged, onHoldClick, highlighte
                     style={{ border: '2px solid #e5e7eb', borderRadius: '8px', cursor: dragging ? 'grabbing' : 'default' }}
                 >
                     <image
-                        href="/board.png"
+                        href="/board.jpg"
                         x="0"
                         y="0"
                         width={DISPLAY_SIZE}

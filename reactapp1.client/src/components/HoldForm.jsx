@@ -78,7 +78,7 @@ export default function HoldForm({ onHoldCreated }) {
                     style={{ border: '2px solid #e5e7eb', borderRadius: '8px', cursor: 'crosshair', display: 'block' }}
                 >
                     <image
-                        href="/board.png"
+                        href="/board.jpg"
                         x="0"
                         y="0"
                         width={displaySize}

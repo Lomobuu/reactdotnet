@@ -204,7 +204,7 @@ export default function ProblemForm({ holds, onProblemCreated }) {
                         style={{ border: '2px solid #e5e7eb', borderRadius: '8px', display: 'block' }}
                     >
                         <image
-                            href="/board.png"
+                            href="/board.jpg"
                             x="0"
                             y="0"
                             width={leftSize}
@@ -256,7 +256,7 @@ export default function ProblemForm({ holds, onProblemCreated }) {
                         style={{ border: '2px solid #e5e7eb', borderRadius: '8px', display: 'block' }}
                     >
                         <image
-                            href="/board.png"
+                            href="/board.jpg"
                             x="0"
                             y="0"
                             width={rightSize}
