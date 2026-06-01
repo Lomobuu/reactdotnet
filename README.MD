@@ -3,6 +3,11 @@
 This repo contains the infrastructure neccecary for a react & .NET web application with a ephemeral environment use case.
 
 It is built in Azure and uses Terraform & GitHub actions as the IaC tools.
+
+## The Application
+The deployed application is a bouldering/climbing route catalogue. It models three things: **holds** (the physical grips on a board, each with a colour, type and X/Y position), **problems** (named routes with a difficulty grade), and **problem-holds** (the ordered set of holds that make up a problem, each tagged with a role such as start, foot or finish).
+
+The frontend (`reactapp1.client`) is a React 19 + Vite single-page app styled with Tailwind CSS that lets you add holds, place them on a board visualisation, and compose problems from those holds. The backend (`ReactApp1.Server`) is an ASP.NET Core (.NET 10) Web API exposing `holds`, `problems` and `problemholds` REST endpoints, persisting to Azure SQL via Entity Framework Core. In production a single .NET process serves both the API and the built React assets.
 # Architecture Summary
 <img src="docs/Ephemeral Environment.drawio.png">
 
@@ -11,6 +16,8 @@ The Ephemeral Environment creates a new environment with all azure resources & d
 The Azure components are:
 - Azure App Services
 - Azure App Plan
+- Azure SQL Server
+- Azure SQL Database
 - Azure Log Analytics
 - Azure Application Insights
 - Azure Container Registry
@@ -93,6 +100,21 @@ There are 3 secrets needed to log into Azure via federated credentials which are
 
 All other application specific secrets are to be stored in the Azure Key Vault
 
+# Database & Connection String Management
+Each environment provisions its own **Azure SQL Server** (`<base>-sqlserver-<env>`) and **Azure SQL Database** (`<base>-sqldb-<env>`). The database uses the `Basic` SKU with a 2 GB max size, and a firewall rule (`allowAzure`, `0.0.0.0`) permits access from Azure services.
+
+The SQL admin credentials and the resulting connection string are never hardcoded. The flow is fully Terraform-managed (see `sql.tf` and `kv.tf`):
+
+1. A `random_password` resource generates the SQL admin password.
+2. The password is stored in Key Vault as the `admin-pw` secret and used as the SQL Server `administrator_login_password` (login `mradministrator`).
+3. Terraform composes the full ADO.NET connection string and stores it in Key Vault as the `sql-connectionstring` secret.
+4. The App Service receives the connection string as a **Key Vault reference** rather than a literal value, via the `ConnectionStrings__DefaultConnection` app setting:
+   `@Microsoft.KeyVault(SecretUri=...)`
+
+The App Service runs with a **SystemAssigned managed identity**, which is granted `AcrPull` on the Container Registry (to pull the image) and is used to resolve the Key Vault references. Key Vault uses RBAC authorization, and the service principal running Terraform is granted the `Key Vault Administrator` role so it can write the secrets.
+
+Locally, the .NET app reads the same `ConnectionStrings:DefaultConnection` key from `appsettings.Development.json` (gitignored) or .NET user secrets.
+
 # Identity & Access
 There exists 1 Service principal with subscription level Owner access(not allowed to give privileged roles)
 
@@ -126,12 +148,12 @@ Contains the terraform code for the ephemeral environment
 
 The only differences are that it creates a new resource group(instead of using data) and it has a role assignment to setup automatic AcrPull for the managed identity in azure app services
 
-### .github/workflow
-Contains the CI/CD pipelines / github actions workflow
-### /reactapp.client
-Frontend of react application
-### /reactapp.Server
-Backend of react application
+### .github/workflows
+Contains the CI/CD pipelines / github actions workflows and the backend bootstrap scripts
+### /reactapp1.client
+Frontend of the react application (React 19 + Vite, Tailwind CSS)
+### /ReactApp1.Server
+Backend of the application (ASP.NET Core, .NET 10, EF Core against Azure SQL)
 ### /docs
 Documentation Images
 # Deployment & Data Flow

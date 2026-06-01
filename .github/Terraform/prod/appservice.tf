@@ -6,8 +6,8 @@ resource "azurerm_app_service_plan" "appPlan" {
   reserved = true
 
   sku {
-    tier = "Standard"
-    size = "S1"
+    tier = "Basic"
+    size = "B1"
   }
     tags = {
     Environment = var.environment
