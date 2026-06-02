@@ -8,16 +8,16 @@ resource "azurerm_key_vault" "keyvault" {
   tenant_id                   = data.azurerm_client_config.current.tenant_id
   soft_delete_retention_days  = 7
   purge_protection_enabled    = false
-  rbac_authorization_enabled = true
+  rbac_authorization_enabled  = true
 
-    network_acls {
-    bypass           = "AzureServices"
-    default_action   = "Allow"
-
+  network_acls {
+    bypass         = "AzureServices"
+    default_action = "Allow"
   }
 
   sku_name = "standard"
-    tags = {
+
+  tags = {
     Environment = var.environment
   }
 }
@@ -28,34 +28,19 @@ resource "azurerm_role_assignment" "kv_admin" {
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
-
-
-
+# Store the shared SQL connection string so the App Service can reference it
+# via Key Vault reference — no SQL resources are created in this environment
 resource "azurerm_key_vault_secret" "ConnectionStringSecret" {
-  name = "sql-connectionstring"
-
-  value = "sqlserver://${azurerm_mssql_server.sqlServer.name}.database.windows.net:1433;database=${azurerm_mssql_database.sqlDB.name};user=${azurerm_mssql_server.sqlServer.administrator_login};password=${azurerm_mssql_server.sqlServer.administrator_login_password};encrypt=true;trustServerCertificate=false"
-
+  name         = "sql-connectionstring"
+  value        = var.shared_sql_connection_string
   key_vault_id = azurerm_key_vault.keyvault.id
 
   depends_on = [azurerm_role_assignment.kv_admin]
 }
 
-
-
-resource "random_password" "admin-pw" {
-  length = 16
-  min_numeric = 4
-  special = true
-  override_special = "_%@"
-}
-
-resource "azurerm_key_vault_secret" "admin-pw" {
-  name         = "admin-pw"
-  key_vault_id = azurerm_key_vault.keyvault.id
-  value        = random_password.admin-pw.result
-
-  depends_on = [
-    azurerm_role_assignment.kv_admin
-  ]
+# Grant the App Service managed identity read access to secrets
+resource "azurerm_role_assignment" "kv_appsvc_reader" {
+  scope                = azurerm_key_vault.keyvault.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_app_service.AppSvc.identity[0].principal_id
 }

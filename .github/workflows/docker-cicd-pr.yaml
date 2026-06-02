@@ -2,7 +2,7 @@ name: 'Container Pull request Build & Deploy'
 
 on:
   workflow_run:
-    workflows: ["Terraform Pull Request Plan & Apply"]     # must match the name: field in terraform-pr.yaml
+    workflows: ["Terraform Pull Request Plan & Apply"]
     types:
       - completed
 
@@ -11,24 +11,23 @@ permissions:
   contents: read
 
 env:
-  ENVIRONMENT: pr${{ github.event.workflow_run.pull_requests[0].number }} # Get the workflow run(which triggers THIS pipeline) and get the PR ID of that workflow run.
-  RESOURCE_GROUP: reactdotnet-management-RG # Must already be created
-  STORAGE_ACCOUNT: tfstatereactdotnetfozzen # Created via the bootstrap
-jobs:
+  ENVIRONMENT: pr${{ github.event.workflow_run.pull_requests[0].number }}
+  RESOURCE_GROUP: reactdotnet-management-RG
+  STORAGE_ACCOUNT: tfstatereactdotnetfozzen
 
+jobs:
   build:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }} # Only start the job if the previous workflow did not fail.
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: pr
-    outputs: # Set metadata that next job needs
-      webapp_name: ${{ steps.tf.outputs.webapp_name }}
+    outputs:
+      webapp_name: ${{ steps.tf_pr.outputs.webapp_name }}
       image_tags: ${{ steps.meta.outputs.tags }}
+      acr_name: ${{ steps.tf_dev.outputs.acr_name }}
     steps:
-
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
-
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -45,8 +44,26 @@ jobs:
         with:
           terraform_wrapper: false
 
-      # Terraform Init (Read Only) to get environment names
-      - name: Terraform Init
+      # Read ACR details from the shared dev state (ACR lives there, not in the PR env)
+      - name: Terraform Init (dev state, read-only)
+        working-directory: .github/Terraform/prod
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=$RESOURCE_GROUP" \
+            -backend-config="storage_account_name=$STORAGE_ACCOUNT" \
+            -backend-config="container_name=tfstate-dev" \
+            -backend-config="key=terraform.tfstate" \
+            -backend-config="use_oidc=true"
+
+      - name: Read ACR outputs from dev state
+        id: tf_dev
+        working-directory: .github/Terraform/prod
+        run: |
+          echo "acr_name=$(terraform output -raw acr_name)" >> $GITHUB_OUTPUT
+          echo "acr_login_server=$(terraform output -raw acr_login_server)" >> $GITHUB_OUTPUT
+
+      # Read webapp_name from the PR-specific state
+      - name: Terraform Init (PR state, read-only)
         working-directory: .github/Terraform/pr
         run: |
           terraform init \
@@ -56,25 +73,20 @@ jobs:
             -backend-config="key=terraform.tfstate" \
             -backend-config="use_oidc=true"
 
-      - name: Read Terraform outputs
-        id: tf
+      - name: Read webapp_name from PR state
+        id: tf_pr
         working-directory: .github/Terraform/pr
-        shell: bash
         run: |
-          echo "acr_name=$(terraform output -raw acr_name)" >> $GITHUB_OUTPUT
-          echo "acr_login_server=$(terraform output -raw acr_login_server)" >> $GITHUB_OUTPUT
           echo "webapp_name=$(terraform output -raw webapp_name)" >> $GITHUB_OUTPUT
 
-
-
       - name: Login to ACR via OIDC
-        run: az acr login --name ${{ steps.tf.outputs.acr_name }}
+        run: az acr login --name ${{ steps.tf_dev.outputs.acr_name }}
 
       - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ steps.tf.outputs.acr_login_server }}/${{ github.repository }}
+          images: ${{ steps.tf_dev.outputs.acr_login_server }}/${{ github.repository }}
 
       - name: Build and push container image
         uses: docker/build-push-action@v5
@@ -84,7 +96,6 @@ jobs:
           file: ReactApp1.Server/Dockerfile
           cache-from: type=gha
           tags: ${{ steps.meta.outputs.tags }}
-
 
   deploy:
     runs-on: ubuntu-latest
@@ -104,6 +115,6 @@ jobs:
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
-        with:   
+        with:
           app-name: ${{ needs.build.outputs.webapp_name }}
           images: ${{ needs.build.outputs.image_tags }}

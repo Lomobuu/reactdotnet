@@ -60,3 +60,9 @@ resource "azurerm_key_vault_secret" "admin-pw" {
     azurerm_role_assignment.kv_admin
   ]
 }
+
+output "sql_connection_string" {
+  description = "Connection string for the shared SQL database — stored in each PR environment's Key Vault"
+  sensitive   = true
+  value       = azurerm_key_vault_secret.ConnectionStringSecret.value
+}

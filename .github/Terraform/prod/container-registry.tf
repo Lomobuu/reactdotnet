@@ -8,3 +8,14 @@ resource "azurerm_container_registry" "acr" {
     Environment = var.environment
   }
 }
+
+
+output "acr_id" {
+  description = "Resource ID of the shared ACR — used by PR environments for AcrPull role assignment"
+  value       = azurerm_container_registry.acr.id
+}
+
+output "acr_login_server" {
+  description = "Login server of the shared ACR — passed to PR App Service app settings"
+  value       = azurerm_container_registry.acr.login_server
+}

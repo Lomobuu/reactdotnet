@@ -1,32 +1,20 @@
 locals {
-  # Make the environment lower-case, e.g. PR123 → pr123
-  env = lower(var.environment)
-
-  # Your base project name
+  # Normalise environment name, e.g. PR123 → pr123
+  env  = lower(var.environment)
   base = "fznreactdotnet"
 
-  # Storage account: no dashes allowed
-  storage_account_name = "${local.base}strg${local.env}"
-
-  # ACR - no dashes allowed
-  acr_name         = "${local.base}reg${local.env}"
-  acr_login_server = "${local.acr_name}.azurecr.io"
-
   # Web app
-  webapp_name = "${local.base}-appsvc-${local.env}"
+  webapp_name   = "${local.base}-appsvc-${local.env}"
   app_plan_name = "${local.base}-appplan-${local.env}"
 
-  # key vault
+  # Key Vault
   kv_name = "${local.base}-kv-${local.env}"
 
-  # Log
+  # Observability
   log_analytics_name = "${local.base}-log-${local.env}"
-  appi_name = "${local.base}-appi-${local.env}"
+  appi_name          = "${local.base}-appi-${local.env}"
 
-  sql_server_name = "${local.base}-sqlserver-${local.env}"
-  sql_db_name = "${local.base}-sqldb-${local.env}"
-
-  # Tags
+  # Common tags
   all_tags = merge(
     {
       environment = local.env
@@ -36,12 +24,6 @@ locals {
   )
 }
 
-output "acr_name" {
-  value = local.acr_name
-}
-output "acr_login_server" {
-  value = local.acr_login_server
-}
 output "webapp_name" {
   value = local.webapp_name
 }

@@ -1,11 +1,10 @@
-
 name: Cleanup PR Terraform Backend
 
 on:
   pull_request:
     branches:
-      - dev    # only run on PRs targeting main
-    types: [closed] # targets both merge and manually close PR
+      - dev
+    types: [closed]
 
 permissions:
   id-token: write
@@ -19,12 +18,62 @@ env:
   ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
   BACKEND_CONTAINER: tfstate-pr${{ github.event.pull_request.number }}
   PR_ID: ${{ github.event.pull_request.number }}
-  RESOURCE_GROUP: reactdotnet-management-RG # Must already be created
-  STORAGE_ACCOUNT: tfstatereactdotnetfozzen # Created via the bootstrap
+  RESOURCE_GROUP: reactdotnet-management-RG
+  STORAGE_ACCOUNT: tfstatereactdotnetfozzen
 
 jobs:
-  destroy:      
+  # Terraform destroy requires the same variable values that were used during apply.
+  # The shared vars (ACR id, ACR login server, SQL connection string) must be supplied
+  # again so Terraform can resolve the plan without errors — even though no real
+  # Azure resources for those are being destroyed here.
+  read-shared-outputs:
+    runs-on: ubuntu-latest
+    environment: pr
+    outputs:
+      shared_acr_id: ${{ steps.tf.outputs.shared_acr_id }}
+      shared_acr_login_server: ${{ steps.tf.outputs.shared_acr_login_server }}
+      shared_sql_connection_string: ${{ steps.tf.outputs.shared_sql_connection_string }}
+    defaults:
+      run:
+        working-directory: .github/Terraform/prod
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Init (dev state, read-only)
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=$RESOURCE_GROUP" \
+            -backend-config="storage_account_name=$STORAGE_ACCOUNT" \
+            -backend-config="container_name=tfstate-dev" \
+            -backend-config="key=terraform.tfstate" \
+            -backend-config="use_oidc=true"
+
+      - name: Read shared outputs from dev state
+        id: tf
+        run: |
+          echo "shared_acr_id=$(terraform output -raw acr_id)" >> $GITHUB_OUTPUT
+          echo "shared_acr_login_server=$(terraform output -raw acr_login_server)" >> $GITHUB_OUTPUT
+          SQL_CS=$(terraform output -raw sql_connection_string)
+          echo "::add-mask::$SQL_CS"
+          echo "shared_sql_connection_string=$SQL_CS" >> $GITHUB_OUTPUT
+
+  destroy:
     name: Terraform Destroy
+    needs: [read-shared-outputs]
     runs-on: ubuntu-latest
     environment: pr
     defaults:
@@ -33,30 +82,41 @@ jobs:
         shell: bash
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=$RESOURCE_GROUP" \
+            -backend-config="storage_account_name=$STORAGE_ACCOUNT" \
+            -backend-config="container_name=tfstate-$environment" \
+            -backend-config="key=terraform.tfstate" \
+            -backend-config="use_oidc=true"
 
-    - name: Terraform Init
-      run: |
-        terraform init \
-          -backend-config="resource_group_name=$RESOURCE_GROUP" \
-          -backend-config="storage_account_name=$STORAGE_ACCOUNT" \
-          -backend-config="container_name=tfstate-$environment" \
-          -backend-config="key=terraform.tfstate" \
-          -backend-config="use_oidc=true"
+      - name: Terraform Format
+        run: terraform fmt -recursive
 
-    - name: Terraform Format
-      run: terraform fmt -recursive
+      - name: Terraform Validate
+        run: terraform validate
 
-    - name: Terraform Validate
-      run: terraform validate 
+      - name: Terraform Plan (Destroy)
+        run: |
+          terraform plan -destroy -input=false \
+            -var location=$location \
+            -var environment=$environment \
+            -var shared_acr_id="${{ needs.read-shared-outputs.outputs.shared_acr_id }}" \
+            -var shared_acr_login_server="${{ needs.read-shared-outputs.outputs.shared_acr_login_server }}" \
+            -var shared_sql_connection_string="${{ needs.read-shared-outputs.outputs.shared_sql_connection_string }}"
 
-    - name: Terraform Plan (Destroy)
-      run: terraform plan -destroy -input=false -var location=$location -var environment=$environment
-
-    - name: Terraform Destroy
-      run: terraform destroy -auto-approve -input=false -var location=$location -var environment=$environment
+      - name: Terraform Destroy
+        run: |
+          terraform destroy -auto-approve -input=false \
+            -var location=$location \
+            -var environment=$environment \
+            -var shared_acr_id="${{ needs.read-shared-outputs.outputs.shared_acr_id }}" \
+            -var shared_acr_login_server="${{ needs.read-shared-outputs.outputs.shared_acr_login_server }}" \
+            -var shared_sql_connection_string="${{ needs.read-shared-outputs.outputs.shared_sql_connection_string }}"

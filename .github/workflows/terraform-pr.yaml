@@ -3,21 +3,21 @@ name: 'Terraform Pull Request Plan & Apply'
 on:
   pull_request:
     branches:
-      - dev # Only runs on PRs targeting dev branch
-    types: [opened, reopened] # Triggers on when you open or re-open a pull request
+      - dev
+    types: [opened, reopened]
 
 permissions:
   id-token: write
   contents: read
 
 env:
-    location: norwayeast
-    ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-    ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-    environment: pr${{ github.event.pull_request.number }} # Only used for the environment name, not auth
-    RESOURCE_GROUP: reactdotnet-management-RG # Must already be created
-    STORAGE_ACCOUNT: tfstatereactdotnetfozzen # Created via the bootstrap
+  location: norwayeast
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  environment: pr${{ github.event.pull_request.number }}
+  RESOURCE_GROUP: reactdotnet-management-RG
+  STORAGE_ACCOUNT: tfstatereactdotnetfozzen
 
 jobs:
   setup-pr-backend:
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: pr
     outputs:
-      container_name: ${{ steps.bootstrap.outputs.container_name }} # Outputs from the bootstrap-pr.sh
+      container_name: ${{ steps.bootstrap.outputs.container_name }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -41,48 +41,105 @@ jobs:
         id: bootstrap
         run: bash .github/workflows/bootstrap-pr.sh ${{ github.event.pull_request.number }}
 
+  # Read shared outputs (ACR, SQL connection string) from the dev Terraform state.
+  # The PR environment has no ACR or SQL of its own — it points at the shared ones.
+  read-shared-outputs:
+    if: github.event_name == 'pull_request'
+    needs: [setup-pr-backend]
+    runs-on: ubuntu-latest
+    environment: pr
+    outputs:
+      shared_acr_id: ${{ steps.tf.outputs.shared_acr_id }}
+      shared_acr_login_server: ${{ steps.tf.outputs.shared_acr_login_server }}
+      shared_sql_connection_string: ${{ steps.tf.outputs.shared_sql_connection_string }}
+    defaults:
+      run:
+        working-directory: .github/Terraform/prod
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+
+      # Init against the dev backend (read-only — we only call `output`, never apply)
+      - name: Terraform Init (dev state, read-only)
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=$RESOURCE_GROUP" \
+            -backend-config="storage_account_name=$STORAGE_ACCOUNT" \
+            -backend-config="container_name=tfstate-dev" \
+            -backend-config="key=terraform.tfstate" \
+            -backend-config="use_oidc=true"
+
+      - name: Read shared outputs from dev state
+        id: tf
+        run: |
+          echo "shared_acr_id=$(terraform output -raw acr_id)" >> $GITHUB_OUTPUT
+          echo "shared_acr_login_server=$(terraform output -raw acr_login_server)" >> $GITHUB_OUTPUT
+          # SQL connection string is sensitive — write to output via mask so it
+          # never appears in logs, but is still available to downstream jobs
+          SQL_CS=$(terraform output -raw sql_connection_string)
+          echo "::add-mask::$SQL_CS"
+          echo "shared_sql_connection_string=$SQL_CS" >> $GITHUB_OUTPUT
+
   terraform-pr:
-        if: github.event_name == 'pull_request'
-        needs: [setup-pr-backend]
-        environment: pr
-        name: Deploy Terraform to PR
-        runs-on: ubuntu-latest
-        # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
-        defaults:
-          run:
-            working-directory: .github/Terraform/pr
-            shell: bash
+    if: github.event_name == 'pull_request'
+    needs: [setup-pr-backend, read-shared-outputs]
+    environment: pr
+    name: Deploy Terraform to PR
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .github/Terraform/pr
+        shell: bash
 
-        steps:
-        # Checkout the repository to the GitHub Actions runner
-        - name: Checkout
-          uses: actions/checkout@v3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
-        # Install the latest version of Terraform CLI 
-        - name: Setup Terraform
-          uses: hashicorp/setup-terraform@v1
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
 
-        # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
-        - name: Terraform Init
-          run: |
-            terraform init \
-              -backend-config="resource_group_name=$RESOURCE_GROUP" \
-              -backend-config="storage_account_name=$STORAGE_ACCOUNT" \
-              -backend-config="container_name=tfstate-$environment" \
-              -backend-config="key=terraform.tfstate" \
-              -backend-config="use_oidc=true"
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=$RESOURCE_GROUP" \
+            -backend-config="storage_account_name=$STORAGE_ACCOUNT" \
+            -backend-config="container_name=tfstate-$environment" \
+            -backend-config="key=terraform.tfstate" \
+            -backend-config="use_oidc=true"
 
+      - name: Terraform Format
+        run: terraform fmt -recursive
 
-        - name: Terraform Format
-          run: terraform fmt -recursive
+      - name: Terraform Validate
+        run: terraform validate
 
-        # Validate before Planning
-        - name: Terraform Validate
-          run: terraform validate 
+      - name: Terraform Plan
+        run: |
+          terraform plan -input=false \
+            -var location=$location \
+            -var environment=$environment \
+            -var shared_acr_id="${{ needs.read-shared-outputs.outputs.shared_acr_id }}" \
+            -var shared_acr_login_server="${{ needs.read-shared-outputs.outputs.shared_acr_login_server }}" \
+            -var shared_sql_connection_string="${{ needs.read-shared-outputs.outputs.shared_sql_connection_string }}"
 
-
-        - name: Terraform Plan
-          run: terraform plan -input=false -var location=$location -var environment=$environment
-          
-        - name: Terraform Apply
-          run: terraform apply -auto-approve  -input=false -var location=$location -var environment=$environment
+      - name: Terraform Apply
+        run: |
+          terraform apply -auto-approve -input=false \
+            -var location=$location \
+            -var environment=$environment \
+            -var shared_acr_id="${{ needs.read-shared-outputs.outputs.shared_acr_id }}" \
+            -var shared_acr_login_server="${{ needs.read-shared-outputs.outputs.shared_acr_login_server }}" \
+            -var shared_sql_connection_string="${{ needs.read-shared-outputs.outputs.shared_sql_connection_string }}"
