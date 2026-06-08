@@ -29,6 +29,14 @@ resource "azurerm_role_assignment" "kv_admin" {
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
+# Allow the App Service managed identity to read secrets so it can resolve the
+# @Microsoft.KeyVault(...) connection-string reference in its app settings.
+resource "azurerm_role_assignment" "kv_appsvc_reader" {
+  scope                = azurerm_key_vault.keyvault.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_app_service.AppSvc.identity[0].principal_id
+}
+
 
 
 
