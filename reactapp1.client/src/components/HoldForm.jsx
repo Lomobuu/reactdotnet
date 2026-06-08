@@ -26,7 +26,6 @@ export default function HoldForm({ onHoldCreated }) {
         name: '',
         type: '',
         color: '',
-        position: '',
         positionX: null,
         positionY: null,
     });
@@ -59,7 +58,7 @@ export default function HoldForm({ onHoldCreated }) {
         });
         setLoading(false);
         setSuccess(true);
-        setForm({ name: '', type: '', color: '', position: '', positionX: null, positionY: null });
+        setForm({ name: '', type: '', color: '', positionX: null, positionY: null });
         setTimeout(() => setSuccess(false), 2000);
         if (onHoldCreated) onHoldCreated();
     };
@@ -146,18 +145,6 @@ export default function HoldForm({ onHoldCreated }) {
                             {COLORS.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
-                </div>
-
-                {/* Position description */}
-                <div>
-                    <label className="text-sm text-gray-600 mb-1 block">Position Description</label>
-                    <input
-                        name="position"
-                        value={form.position}
-                        onChange={handleChange}
-                        placeholder="e.g. Bottom middle"
-                        className="w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-400"
-                    />
                 </div>
 
                 <button

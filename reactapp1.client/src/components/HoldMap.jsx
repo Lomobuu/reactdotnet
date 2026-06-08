@@ -165,7 +165,6 @@ export default function HoldMap({ holds, onHoldsChanged, onHoldClick, highlighte
                             <div className="text-lg">{typeIcon(selected.type)} <span className="font-bold text-gray-900">{selected.name}</span></div>
                             <div className="text-sm text-gray-500">Type: {selected.type}</div>
                             <div className="text-sm text-gray-500">Color: {selected.color}</div>
-                            <div className="text-sm text-gray-500">Position: {selected.position}</div>
                             <div className="text-sm text-gray-400 font-mono">
                                 X: {dragging?.hold.id === selected.id ? dragging.x : selected.positionX}{' '}
                                 Y: {dragging?.hold.id === selected.id ? dragging.y : selected.positionY}
@@ -190,7 +189,6 @@ export default function HoldMap({ holds, onHoldsChanged, onHoldClick, highlighte
                             <div className="text-lg">{typeIcon(hovered.type)} <span className="font-bold text-gray-900">{hovered.name}</span></div>
                             <div className="text-sm text-gray-500">Type: {hovered.type}</div>
                             <div className="text-sm text-gray-500">Color: {hovered.color}</div>
-                            <div className="text-sm text-gray-500">Position: {hovered.position}</div>
                             <div className="text-sm text-gray-400 font-mono">X: {hovered.positionX} Y: {hovered.positionY}</div>
                             <p className="text-xs text-gray-400 mt-1">Click to select</p>
                         </div>

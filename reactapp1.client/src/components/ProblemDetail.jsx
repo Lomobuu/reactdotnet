@@ -61,9 +61,6 @@ export default function ProblemDetail({ problem, onHoldsLoaded }) {
                             </span>
                             <span className="text-sm text-gray-500">{ph.hold.type} · {ph.hold.color}</span>
                         </div>
-                        <span className="ml-auto text-sm text-gray-400 italic">
-                            {ph.hold.position}
-                        </span>
                     </div>
                 ))}
             </div>
