@@ -39,9 +39,6 @@ locals {
 output "acr_name" {
   value = local.acr_name
 }
-output "acr_login_server" {
-  value = local.acr_login_server
-}
 output "webapp_name" {
   value = local.webapp_name
 }

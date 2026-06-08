@@ -11,18 +11,18 @@ The frontend (`reactapp1.client`) is a React 19 + Vite single-page app styled wi
 # Architecture Summary
 <img src="docs/Ephemeral Environment.drawio.png">
 
-The Ephemeral Environment creates a new environment with all azure resources & deploys the image created to the azure web services for each pull request that is targeted to the dev branch.
+The Ephemeral Environment creates a new environment for each pull request targeted at the dev branch and deploys the built image to its Azure App Service. To keep PR environments cheap and fast, they do **not** duplicate every resource — the Azure Container Registry and the Azure SQL database are **shared** from the dev environment, while everything else is created fresh per PR and torn down when the PR closes.
 
 The Azure components are:
 - Azure App Services
 - Azure App Plan
-- Azure SQL Server
-- Azure SQL Database
+- Azure SQL Server *(dev/test/prod only — PR environments reuse the shared dev SQL)*
+- Azure SQL Database *(dev/test/prod only — PR environments reuse the shared dev SQL)*
 - Azure Log Analytics
 - Azure Application Insights
-- Azure Container Registry
+- Azure Container Registry *(dev/test/prod only — PR environments reuse the shared dev ACR)*
 - Azure Key Vault
-- Azure Storage Container
+- Azure Storage Container *(dev/test/prod only)*
 # Infrastructure As Code (IaC)
 Terraform is the IaC tool used
 locals.tf is used for naming of all azure resources
@@ -70,16 +70,17 @@ This is the terraform creation workflow for the ephemeral environment. Runs only
 
 Runs a bootstrap-pr.sh first with auth to azure, which sets up a container in the management-RG to set up state configuration for the environment
 
-1. Runs terraform init
-2. Terraform plan
-3. Terraform apply, using the PR number as the "environment"
+1. Reads the shared outputs (ACR id, ACR login server and the SQL connection string) from the **dev** Terraform state (read-only init) — the PR environment has no ACR or SQL of its own. The SQL connection string is masked so it never appears in logs.
+2. Runs terraform init against the PR's own state container
+3. Terraform plan
+4. Terraform apply, using the PR number as the "environment" and passing the shared ACR + SQL values in as `shared_*` variables
 
 ### 6. Container Pull request Build & Deploy
 This is the container build & deploy workflow for the ephemeral environment. Runs on completion of the "Terraform Pull Request Plan & Apply" workflow.
 
 1. Builds an image based on the commit sha of the previous workflow it triggered on
 2. Runs terraform 
-3. Pushes the image to the container registry within the environment
+3. Pushes the image to the shared container registry (the dev ACR)
 4. deploy to azure web services
 
 ### 7. Cleanup PR Terraform Backend
@@ -101,7 +102,7 @@ There are 3 secrets needed to log into Azure via federated credentials which are
 All other application specific secrets are to be stored in the Azure Key Vault
 
 # Database & Connection String Management
-Each environment provisions its own **Azure SQL Server** (`<base>-sqlserver-<env>`) and **Azure SQL Database** (`<base>-sqldb-<env>`). The database uses the `Basic` SKU with a 2 GB max size, and a firewall rule (`allowAzure`, `0.0.0.0`) permits access from Azure services.
+The **dev, test and prod** environments each provision their own **Azure SQL Server** (`<base>-sqlserver-<env>`) and **Azure SQL Database** (`<base>-sqldb-<env>`). The database uses the `Basic` SKU with a 2 GB max size, and a firewall rule (`allowAzure`, `0.0.0.0`) permits access from Azure services. PR environments do **not** create their own SQL — they reuse the shared dev database (see *PR environments* below).
 
 The SQL admin credentials and the resulting connection string are never hardcoded. The flow is fully Terraform-managed (see `sql.tf` and `kv.tf`):
 
@@ -114,6 +115,14 @@ The SQL admin credentials and the resulting connection string are never hardcode
 The App Service runs with a **SystemAssigned managed identity**, which is granted `AcrPull` on the Container Registry (to pull the image) and is used to resolve the Key Vault references. Key Vault uses RBAC authorization, and the service principal running Terraform is granted the `Key Vault Administrator` role so it can write the secrets.
 
 Locally, the .NET app reads the same `ConnectionStrings:DefaultConnection` key from `appsettings.Development.json` (gitignored) or .NET user secrets.
+
+### PR environments
+Ephemeral PR environments don't stand up their own SQL Server or Container Registry. Instead, the PR workflow reads the dev environment's Terraform outputs — `acr_id`, `acr_login_server` and the (sensitive) `sql_connection_string` — and passes them into the PR config as the `shared_acr_id`, `shared_acr_login_server` and `shared_sql_connection_string` variables. The PR config then:
+
+- stores the shared connection string in the PR's **own** Key Vault as the `sql-connectionstring` secret, which the App Service consumes via Key Vault reference (so each PR still resolves secrets through its own vault), and
+- grants the PR App Service's managed identity `AcrPull` on the **shared** ACR and `Key Vault Secrets User` on its own vault.
+
+This means every PR's app talks to the same shared dev database — keep that in mind when testing migrations or destructive operations against a PR environment.
 
 # Identity & Access
 There exists 1 Service principal with subscription level Owner access(not allowed to give privileged roles)
@@ -144,9 +153,12 @@ For a non-ephemeral environment, only contributor access to each resource group 
 Contains the terraform code for the dev, test and production environments
 
 ### .github/Terraform/pr
-Contains the terraform code for the ephemeral environment
+Contains the terraform code for the ephemeral environment. It is a slimmed-down version of the prod config — the differences are:
 
-The only differences are that it creates a new resource group(instead of using data) and it has a role assignment to setup automatic AcrPull for the managed identity in azure app services
+- it **creates** a new resource group (the prod config reads an existing one with `data`)
+- it does **not** create its own ACR, SQL Server/Database or Storage account — those are shared from dev and passed in via the `shared_acr_id`, `shared_acr_login_server` and `shared_sql_connection_string` variables
+- it stores the shared SQL connection string in its own Key Vault and references it from the App Service
+- it adds role assignments so the App Service managed identity can pull from the shared ACR (`AcrPull`) and read its own Key Vault secrets (`Key Vault Secrets User`)
 
 ### .github/workflows
 Contains the CI/CD pipelines / github actions workflows and the backend bootstrap scripts
@@ -164,7 +176,7 @@ Data flow for the Ephemeral Environment
 3. PR Triggers workflow
 4. Workflow runs terraform & creates ephemeral environment
 5. Workflow triggers new workflow
-6. Workflow builds image, deploys to container registry & pushes to web app in ephemeral environment
+6. Workflow builds image, pushes it to the shared container registry & deploys it to the web app in the ephemeral environment
 7. Test & Validate Manually
 8. Merge/Close Pull Request triggers workflow
 9. Terraform destroy ephemeral environment
